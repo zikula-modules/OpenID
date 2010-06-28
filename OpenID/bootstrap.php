@@ -15,4 +15,4 @@
 ZLoader::addAutoloader('Auth', dirname(__FILE__) . '/lib/vendor');
 
 $authApi = ModUtil::getObject('OpenID_Api_Auth'); // this will additionally register the service.
-EventUtil::attach('users.delete', new Zikula_ServiceHandler('module.openid.api.auth', 'deleteUserEvent'));
+EventUtil::attachService('users.delete', new Zikula_ServiceHandler('module.openid.api.auth', 'deleteUserEvent'));
