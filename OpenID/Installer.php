@@ -21,6 +21,10 @@ class OpenID_Installer extends Zikula_Installer
      */
     public function install()
     {
+        if (!DBUtil::createTable('openid_user')) {
+            return false;
+        }
+
         // Initialisation successful
         return true;
     }
@@ -47,6 +51,10 @@ class OpenID_Installer extends Zikula_Installer
      */
     public function uninstall()
     {
+        if(!DBUtil::dropTable('openid_users')) {
+            return false;
+        }
+
         // Deletion successful
         return true;
     }
