@@ -17,19 +17,16 @@ class OpenID_Api_User extends Zikula_Api
     /**
      * Retrieves an OpenID record for the user currently logged in.
      *
-     * Either a unique (database record) id, a unique claimed id, or a primary indicator must be
+     * Either a unique (database record) id, or a unique claimed id must be
      * supplied in order to uniquely identify the record for this user to retrieve.
      *
      * @param array $args All parameters passed to this function.
      *                      int     $args['id']         The unique database id for the record to retrieve, which must be associated with the
-     *                                                      user currently logged in; required if 'claimed_id' or 'primary' are not specified;
-     *                                                      cannot be used in conjunction with 'claimed_id' or 'primary'.
+     *                                                      user currently logged in; required if 'claimed_id' is not specified;
+     *                                                      cannot be used in conjunction with 'claimed_id'.
      *                      string  $args['claimed_id'] The claimed OpenID to retrieve, which must be associated with the user currently
-     *                                                      logged in; required if 'id' or 'primary' are not specified; cannot be
-     *                                                      used in conjunction with 'id' or 'primary'.
-     *                      bool    $args['primary']    Indicates that the primary OpenID for the currently logged in user should be retrieved;
-     *                                                      the value of this parameter must be true; required if 'id' or 'claimed_id' are
-     *                                                      not specified; cannot be used in conjunction with 'id' or 'claimed_id'.
+     *                                                      logged in; required if 'id' is not specified; cannot be
+     *                                                      used in conjunction with 'id'.
      *
      * @return array|bool The OpenID record as specified, or an empty array if no such record is found; false on error.
      */
@@ -40,11 +37,8 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerPermissionError();
         }
 
-        if (isset($args['id']) && (isset($args['claimed_id']) || isset($args['is_primary']))) {
-            // Cannot supply more than one of id, claimed_id or is_primary
-            return LogUtil::registerArgsError();
-        } elseif (isset($args['claimed_id']) && isset($args['is_primary'])) {
-            // Cannot supply more than one of id, claimed_id or is_primary
+        if (isset($args['id']) && isset($args['claimed_id'])) {
+            // Cannot supply more than one of id or claimed_id
             return LogUtil::registerArgsError();
         }
 
@@ -61,13 +55,6 @@ class OpenID_Api_User extends Zikula_Api
             } else {
                 $fieldKey = 'claimed_id';
                 $value = "'" . DataUtil::formatForStore($args['claimed_id']) . "'";
-            }
-        } elseif (isset($args['is_primary'])) {
-            if (empty($args['is_primary']) || !is_bool($args['is_primary'])) {
-                return LogUtil::registerArgsError();
-            } else {
-                $fieldKey = 'is_primary';
-                $value = 1;
             }
         }
 
@@ -101,7 +88,7 @@ class OpenID_Api_User extends Zikula_Api
             $dbTables = DBUtil::getTables();
             $openidUserColumn = $dbTables['openid_user_column'];
             $where = "WHERE {$openidUserColumn['uid']} = {$uid}";
-            $orderby = "ORDER BY {$openidUserColumn['is_primary']}, {$openidUserColumn['claimed_id']}";
+            $orderby = "ORDER BY {$openidUserColumn['claimed_id']}";
             $returnValue = DBUtil::selectObjectArray('openid_user', $where, $orderby);
         }
 
@@ -138,11 +125,7 @@ class OpenID_Api_User extends Zikula_Api
     /**
      *
      * @param array $args All parameters for this function.
-     *                      string $args['claimed_id'] Counts only those records for the current user whose claimed id is equal to this; optional,
-     *                                                  cannot be used in combination with args['primary'].
-     *                      string $args['is_primary'] Counts only those records for the current user whose claimed id is equal to this; optional,
-     *                                                  cannot be used in combination with args['primary'].
-     *
+     *                      string $args['claimed_id'] Counts only those records for the current user whose claimed id is equal to this; optional.
      *
      * @return int|bool The count for the current user; false on error
      */
@@ -153,24 +136,12 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerPermissionError();
         }
 
-        if (isset($args['claimed_id']) && isset($args['primary'])) {
-            // Cannot supply more than one of claimed_id or primary
-            return LogUtil::registerArgsError();
-        }
-
         if (isset($args['claimed_id'])) {
             if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
                 return LogUtil::registerArgsError();
             } else {
                 $fieldKey = 'claimed_id';
                 $value = "'" . DataUtil::formatForStore($args['claimed_id']) . "'";
-            }
-        } elseif (isset($args['is_primary'])) {
-            if (!is_bool($args['is_primary'])) {
-                return LogUtil::registerArgsError();
-            } else {
-                $fieldKey = 'is_primary';
-                $value = $args['is_primary'] ? 1 : 0;
             }
         }
 
@@ -194,7 +165,6 @@ class OpenID_Api_User extends Zikula_Api
      *
      * @param array $args All arguments passed to the function.
      *                      string  $args['claimed_id']  A normalized and validated claimed OpenID
-     *                      bool    $args['is_primary'] Whether this is now the primary ID or not.
      *
      * @return <type>
      */
@@ -212,7 +182,6 @@ class OpenID_Api_User extends Zikula_Api
         $openidCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll');
 
         $claimedID = $args['claimed_id'];
-        $isPrimary = (isset($args['is_primary']) && is_bool($args['is_primary']) && $args['is_primary']) || ($openidCount <= 0);
 
         $uid = UserUtil::getVar('uid');
 
@@ -237,25 +206,9 @@ class OpenID_Api_User extends Zikula_Api
         } elseif ($otherUserCount > 0) {
             return LogUtil::registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with another account. If this is your OpenID, then please contact the site administrator.', $claimedID));
         } else {
-            if ($isPrimary) {
-                $currentPrimaryOpenID = ModUtil::apiFunc($this->getName(), 'user', 'get', array(
-                    'is_primary'    => true,
-                ));
-                if ($currentPrimaryOpenID) {
-                    // Unset primary
-                    $openidObj = array(
-                        'id'        => $currentPrimaryOpenID['id'],
-                        'is_primary'=> false,
-                    );
-
-                    DBUtil::updateObject($openidObj, 'openid_user');
-                }
-            }
-
             $openidObj = array(
                 'uid'           => $uid,
                 'claimed_id'    => $claimedID,
-                'is_primary'    => $isPrimary ? true : false,
             );
 
             $saved = DBUtil::insertObject($openidObj, 'openid_user');
