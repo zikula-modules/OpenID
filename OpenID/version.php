@@ -7,21 +7,33 @@
  *
  * @license GNU/LGPLv3 (or at your option, any later version).
  * @package Zikula
+ * @subpackage OpenID
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+class OpenID_Version extends Zikula_Version
+{
+    public function getMetaData()
+    {
+        $meta = array();
+        $meta['name']           = 'OpenID';
+        $meta['displayname']    = __('OpenID Authentication Provider');
+        $meta['description']    = __('Provides OpenID authentication.');
+        //! module name that appears in URL
+        $meta['url']            = __('openid');
 
-$modversion['name']           = 'OpenID';
-$modversion['displayname']    = __('OpenID Authentication Provider');
-$modversion['description']    = __('Provides OpenID authentication.');
-//! module name that appears in URL
-$modversion['url']            = __('OpenID');
+        $meta['version']        = '0.0.1';
 
-$modversion['version']        = '0.0.1';
+        $meta['author']         = 'RMBurkhead';
+        $meta['contact']        = 'http://code.zikula.org/OpenID';
 
-$modversion['author']         = 'Drak';
-$modversion['contact']        = 'drak@zikula.org';
-
-$modversion['securityschema'] = array('OpenID::' => '::');
+        $meta['securityschema'] = array(
+            'OpenID::self'  => '::',
+            'OpenID::'      => 'User ID::',
+        );
+        
+        return $meta;
+    }
+}
