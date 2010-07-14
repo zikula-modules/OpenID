@@ -1,0 +1,23 @@
+For Users:
+
+    Component:      OpenID::self
+    Instance:       ::
+
+    Comment Access: User is able to view and manage all aspects of his OpenIDs
+                    associated with his account, including associating new OpenIDs,
+                    removing OpenIDs, changing the primary OpenID, etc.
+
+    No other access levels are used with respect to users.
+
+For Admins:
+
+    Component:      OpenID::settings
+    Instance:       ::
+
+    Admin Access:   User is able to modify the module settings for the OpenID module.
+
+    Component:      Users::
+    Instance:       ::
+
+    Delete Access:  User is able to delete OpenIDs associated with a user account, but
+                    only when deleting that user account through the Users module.

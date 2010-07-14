@@ -46,8 +46,20 @@ class OpenID_Api_Auth extends Zikula_AuthApi
     public function checkPassword($args)
     {
         // TODO - stub
-        if (!isset($args['authinfo']) || empty($args['authinfo']) || !is_array($args['authinfo'])) {
+        if (!isset($args['authinfo']) || empty($args['authinfo']) || !is_array($args['authinfo'])
+            || !isset($args['authinfo']['supplied_id']) || empty($args['authinfo']['supplied_id']))
+        {
             return LogUtil::registerArgsError();
+        }
+
+        $authinfo = $args['authinfo'];
+
+        // TODO - Check the password!
+        $claimedID = $authinfo['supplied_id'];
+
+        // Set a session variable, if necessary, with the claimed id.
+        if (isset($args['set_claimed_id']) && $args['set_claimed_id']) {
+            SessionUtil::setVar('claimed_id', $claimedID, '/OpenID');
         }
 
         return true;
