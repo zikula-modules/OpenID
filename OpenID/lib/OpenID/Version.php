@@ -19,10 +19,11 @@ class OpenID_Version extends Zikula_Version
     {
         $meta = array();
         $meta['name']           = 'OpenID';
-        $meta['displayname']    = __('OpenID Authentication Provider');
-        $meta['description']    = __('Provides OpenID authentication.');
+        $meta['displayname']    = __('OpenID for Zikula');
+        $meta['description']    = __('Provides OpenID authentication for Zikula user accounts.');
         //! module name that appears in URL
         $meta['url']            = __('openid');
+        $meta['capabilities'] = array('authentication' => array('version' => '1.0'));
 
         $meta['version']        = '0.0.1';
 

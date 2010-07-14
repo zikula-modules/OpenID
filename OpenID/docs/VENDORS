@@ -1,0 +1,11 @@
+This file contains a list of vendor libraries distributed with OpenID for Zikula
+--------------------------------------------------------------------------------
+
+PHP LIBRARIES
+-------------
+Janrain OpenID Enabled (php-openid) 2.2.2
+    Vendor website: http://www.janrain.com/openid-enabled
+    Original downloaded from: http://github.com/openid/php-openid/downloads
+    License: Apache 2.0
+    Location in OpenID for Zikula: lib/OpenID/OpenID and lib/OpenID/Yadis
+    Patch details: none

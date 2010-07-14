@@ -12,7 +12,18 @@
  * information regarding copyright and licensing.
  */
 
-ZLoader::addAutoloader('Auth', dirname(__FILE__) . '/lib/vendor');
+$libVendorPath = dirname(__FILE__) . '/lib/vendor';
+ZLoader::addAutoloader('Auth', $libVendorPath);
+
+// JanRain OpenID Libraries use require_once, so we need to ensure their stuff is on the include_path
+$includePath = ini_get('include_path');
+if ((strpos($includePath, PATH_SEPARATOR . $libVendorPath) === false)
+    && (strpos($includePath, $libVendorPath . PATH_SEPARATOR) === false)
+    && ($includePath !== $libVendorPath))
+{
+    set_include_path((!empty($includePath) ? $includePath . PATH_SEPARATOR : '') . $libVendorPath);
+}
+define('Auth_OpenID_RAND_SOURCE', null);
 
 // TODO - This must be old code.
 //$authApi = ModUtil::getObject('OpenID_Api_Auth'); // this will additionally register the service.

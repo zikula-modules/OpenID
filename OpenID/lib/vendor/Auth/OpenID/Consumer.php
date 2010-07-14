@@ -1,5 +1,7 @@
 <?php
 
+ini_set('allow_call_time_pass_reference', 1);
+
 /**
  * This module documents the main interface with the OpenID consumer
  * library.  The only part of the library which has to be used and

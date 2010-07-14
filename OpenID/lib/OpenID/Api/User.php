@@ -42,29 +42,29 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerArgsError();
         }
 
-        if (isset($args['id'])) {
-            if (!is_numeric($args['id']) || ((int)$args['id'] != $args['id']) || ($args['id'] < 1)) {
-                return LogUtil::registerArgsError();
-            } else {
-                $fieldKey = 'id';
-                $value = $args['id'];
-            }
-        } elseif (isset($args['claimed_id'])) {
-            if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
-                return LogUtil::registerArgsError();
-            } else {
-                $fieldKey = 'claimed_id';
-                $value = "'" . DataUtil::formatForStore($args['claimed_id']) . "'";
-            }
-        }
-
         $uid = UserUtil::getVar('uid');
 
-        $dbTables = DBUtil::getTables();
-        $openidUserColumn = $dbTables['openid_user_column'];
-        $where = "WHERE ({$openidUserColumn['uid']} = {$uid}) AND ({$openidUserColumn[$fieldKey]} = {$value})";
+        try {
+            if (isset($args['id'])) {
+                if (!is_numeric($args['id']) || ((int)$args['id'] != $args['id']) || ($args['id'] < 1)) {
+                    return LogUtil::registerArgsError();
+                } else {
+                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                        ->getMapById($uid, $args['id']);
+                }
+            } elseif (isset($args['claimed_id'])) {
+                if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
+                    return LogUtil::registerArgsError();
+                } else {
+                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                        ->getMapByClaimedId($uid, $args['claimed_id']);
+                }
+            }
+        } catch (Exception $e) {
+            return false;
+        }
 
-        return DBUtil::selectObject('openid_user', $where);
+        return isset($userMap) ? $userMap : array();
     }
 
     /**
@@ -81,18 +81,20 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerPermissionError();
         }
 
-        $returnValue = false;
+        $userMapList = false;
 
         $uid = UserUtil::getVar('uid');
-        if ($uid && ($uid > 0)) {
-            $dbTables = DBUtil::getTables();
-            $openidUserColumn = $dbTables['openid_user_column'];
-            $where = "WHERE {$openidUserColumn['uid']} = {$uid}";
-            $orderby = "ORDER BY {$openidUserColumn['claimed_id']}";
-            $returnValue = DBUtil::selectObjectArray('openid_user', $where, $orderby);
+
+        if ($uid && ($uid > 1)) {
+            try {
+                $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->getAllForUid($uid);
+            } catch (Exception $e) {
+                return false;
+            }
         }
 
-        return $returnValue;
+        return isset($userMapList) ? $userMapList : array();
     }
 
     /**
@@ -111,15 +113,14 @@ class OpenID_Api_User extends Zikula_Api
     {
         if (!isset($args['claimed_id']) || empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
             return LogUtil::registerArgsError();
-        } else {
-            $claimedID = DataUtil::formatForStore($args['claimed_id']);
         }
 
-        $dbTables = DBUtil::getTables();
-        $openidUserColumn = $dbTables['openid_user_column'];
-        $where = "WHERE {$openidUserColumn['claimed_id']} = '{$claimedID}'";
-
-        return DBUtil::selectObjectCount('openid_user', $where);
+        try {
+            return Doctrine_Core::getTable('OpenID_Model_UserMap')
+                ->countClaimedId($args['claimed_id']);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -139,25 +140,26 @@ class OpenID_Api_User extends Zikula_Api
         if (isset($args['claimed_id'])) {
             if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
                 return LogUtil::registerArgsError();
-            } else {
-                $fieldKey = 'claimed_id';
-                $value = "'" . DataUtil::formatForStore($args['claimed_id']) . "'";
             }
         }
 
         $uid = UserUtil::getVar('uid');
 
-        $dbTables = DBUtil::getTables();
-        $openidUserColumn = $dbTables['openid_user_column'];
-        $whereArgs = array();
-        $whereArgs[] = "{$openidUserColumn['uid']} = {$uid}";
-        if (isset($fieldKey) && !empty($fieldKey)) {
-            $whereArgs[] = "{$openidUserColumn[$fieldKey]} = {$value}";
+        try {
+            if (isset($args['claimed_id'])) {
+                return Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->countClaimedId($args['claimed_id'], $uid);
+            } else {
+                return Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->countAll($uid);
+            }
+        } catch (Exception $e) {
+            if (System::isDevelopmentMode()) {
+                return LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
+            } else {
+                return false;
+            }
         }
-
-        $where = "WHERE (" . implode(') AND (', $whereArgs) . ")";
-
-        return DBUtil::selectObjectCount('openid_user', $where);
     }
 
     /**
@@ -175,14 +177,23 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerPermissionError();
         }
 
-        if (!isset($args['claimed_id']) || empty($args['claimed_id'])) {
+        if (!isset($args['authinfo']) || empty($args['authinfo']) || !is_array($args['authinfo'])) {
+            return LogUtil::registerArgsError();
+        }
+        $authinfo = $args['authinfo'];
+
+        if (!isset($authinfo['claimed_id']) || empty($authinfo['claimed_id'])
+            || !isset($authinfo['openid_type']) || empty($authinfo['openid_type']))
+        {
             return LogUtil::registerArgsError();
         }
 
-        $openidCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll');
+        $openidHelper = OpenID_HelperBuilder::buildInstance($authinfo['openid_type'], $authinfo);
+        if ($openidHelper == false) {
+            return LogUtil::registerArgsError();
+        }
 
-        $claimedID = $args['claimed_id'];
-
+        $claimedID = $authinfo['claimed_id'];
         $uid = UserUtil::getVar('uid');
 
         $thisUserCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll', array(
@@ -199,21 +210,26 @@ class OpenID_Api_User extends Zikula_Api
             return false;
         }
 
-        $saved = false;
-
         if ($thisUserCount > 0) {
             return LogUtil::registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with your account.', $claimedID));
         } elseif ($otherUserCount > 0) {
             return LogUtil::registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with another account. If this is your OpenID, then please contact the site administrator.', $claimedID));
         } else {
-            $openidObj = array(
-                'uid'           => $uid,
-                'claimed_id'    => $claimedID,
-            );
-
-            $saved = DBUtil::insertObject($openidObj, 'openid_user');
+            try {
+                $userMap = new OpenID_Model_UserMap();
+                $userMap->fromArray(array(
+                    'uid'           => $uid,
+                    'openid_type'   => $authinfo['openid_type'],
+                    'claimed_id'    => $claimedID,
+                    'display_id'    => $openidHelper->getDisplayName($claimedID),
+                ));
+                $userMap->save();
+                return true;
+            } catch (Exception $e) {
+                return false;
+            }
         }
 
-        return $saved;
+        return false;
     }
 }
