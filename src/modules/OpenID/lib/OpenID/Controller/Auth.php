@@ -35,8 +35,12 @@ class OpenID_Controller_Auth extends Zikula_Controller
     public function loginBlockFields()
     {
         $openidType = FormUtil::getPassedValue('openidtype', 'openid', 'GET');
-        return $this->view->assign('openid_type', $openidType)
-            ->fetch('openid_auth_loginblockfields.tpl');
+        $templateName = "openid_auth_loginblockfields_{$openidType}.tpl";
+        if ($this->view->template_exists($templateName)) {
+            return $this->view->fetch($templateName);
+        } else {
+            return false;
+        }
     }
 
     public function loginBlockIcon()
