@@ -1,6 +1,5 @@
-{assign var='supports_ssl' value='openssl_open'|function_exists}
-<a id="users_block_loginwith_OpenID" class="users_block_loginwith"  href="{getcurrenturi loginwith='OpenID' openidtype='openid'}">{img modname='OpenID' src='small/openid-icon.png' __alt='OpenID' __title='OpenID'}</a>
-{if $supports_ssl}
-<a id="users_block_loginwith_Google" class="users_block_loginwith"  href="{getcurrenturi loginwith='OpenID' openidtype='google'}">[Google&reg; Account]</a>
+<form id="users_block_loginwith_OpenID" class="users_block_loginwith" method="post" action="{homepage}" enctype="application/x-www-form-urlencoded"><input type="hidden" id="loginwith_OpenID" name="loginwith" value="OpenID" /><input type="hidden" id="openidtype_Users" name="openidtype" value="openid" /><input type="submit" id="users_block_loginwith_button_OpenID" class="users_block_loginwith_button" value="OpenID" /></form>
+{if isset($supports_ssl) && $supports_ssl}
+<form id="users_block_loginwith_Google" class="users_block_loginwith" method="post" action="{homepage}" enctype="application/x-www-form-urlencoded"><input type="hidden" id="loginwith_Google" name="loginwith" value="OpenID" /><input type="hidden" id="openidtype_Google" name="openidtype" value="google" /><input type="submit" id="users_block_loginwith_button_Google" class="users_block_loginwith_button" value="Google Account" /></form>
 {/if}
-<a id="users_block_loginwith_VeriSign" class="users_block_loginwith"  href="{getcurrenturi loginwith='OpenID' openidtype='verisign'}">[VeriSign&reg; PIP]</a>
+<form id="users_block_loginwith_PIP" class="users_block_loginwith" method="post" action="{homepage}" enctype="application/x-www-form-urlencoded"><input type="hidden" id="loginwith_PIP" name="loginwith" value="OpenID" /><input type="hidden" id="openidtype_PIP" name="openidtype" value="pip" /><input type="submit" id="users_block_loginwith_button_PIP" class="users_block_loginwith_button" value="Symantec (VeriSign) PIP" /></form>
