@@ -12,7 +12,7 @@
  * information regarding copyright and licensing.
  */
 
-$libVendorPath = dirname(__FILE__) . '/lib/vendor';
+$libVendorPath = dirname(__FILE__) . '/lib/vendor/Janrain-php-openid';
 ZLoader::addAutoloader('Auth', $libVendorPath);
 
 // JanRain OpenID Libraries use require_once, so we need to ensure their stuff is on the include_path
