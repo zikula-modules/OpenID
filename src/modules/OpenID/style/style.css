@@ -1,11 +1,11 @@
-input#users_block_loginwith_button_OpenID {
+input#users_loginblock_loginwith_button_OpenID {
     background: transparent url("../images/extrasmall/openid-icon.png") no-repeat scroll center left;
 }
 
-input#users_block_loginwith_button_Google {
+input#users_loginblock_loginwith_button_Google {
     background: transparent url("../images/extrasmall/google-favicon.png") no-repeat scroll center left;
 }
 
-input#users_block_loginwith_button_PIP {
+input#users_loginblock_loginwith_button_PIP {
     background: transparent url("../images/extrasmall/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
