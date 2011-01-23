@@ -45,9 +45,9 @@ OpenID.LoginBlock =
         var data = req.getData();
 
         Element.update('users_loginblock_fields', data.content);
+        $('users_authmodule').setValue('OpenID');
         
         Zikula.Users.LoginBlock.changingLoginBlockFields(false);
-
         $('users_loginblock_loginwith_' + data.openidType).addClassName('z-hide');
     }
 
