@@ -56,4 +56,13 @@ class OpenID_Controller_Auth extends Zikula_Controller
             ->fetch('openid_auth_loginblockicon.tpl');
     }
 
+    public function loginScreenIcon()
+    {
+        $openidType = FormUtil::getPassedValue('openidtype', 'openid', 'GETPOST');
+        $supportsSSL = function_exists('openssl_open');
+        return $this->view->assign('openid_type', $openidType)
+            ->assign('supports_ssl', $supportsSSL)
+            ->fetch('openid_auth_loginscreenicon.tpl');
+    }
+
 }
