@@ -60,9 +60,30 @@ class OpenID_Controller_Auth extends Zikula_Controller
     {
         $openidType = FormUtil::getPassedValue('openidtype', 'openid', 'GETPOST');
         $supportsSSL = function_exists('openssl_open');
-        return $this->view->assign('openid_type', $openidType)
-            ->assign('supports_ssl', $supportsSSL)
-            ->fetch('openid_auth_loginscreenicon.tpl');
+
+        $loginScreenIcons = array();
+
+        $this->view->assign('openid_type', $openidType)
+                   ->assign('openid_authkey', SecurityUtil::generateAuthKey('OpenID'));
+
+        $icon = $this->view->fetch('openid_auth_loginscreenicon_openid.tpl');
+        if ($icon) {
+            $loginScreenIcons['OpenID'] = $icon;
+        }
+
+        if ($supportsSSL) {
+            $icon = $this->view->fetch('openid_auth_loginscreenicon_google.tpl');
+            if ($icon) {
+                $loginScreenIcons['Google'] = $icon;
+            }
+        }
+
+        $icon = $this->view->fetch('openid_auth_loginscreenicon_pip.tpl');
+        if ($icon) {
+            $loginScreenIcons['PIP'] = $icon;
+        }
+
+        return $loginScreenIcons;
     }
 
 }
