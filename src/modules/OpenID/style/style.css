@@ -1,5 +1,3 @@
-@import url("../../../system/Users/style/style.css");
-
 input#users_loginblock_loginwith_button_OpenID {
     background-image: url("../images/extrasmall/openid-icon.png");
 }

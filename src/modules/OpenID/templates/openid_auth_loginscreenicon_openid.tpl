@@ -1,4 +1,4 @@
-<form id="users_loginscreen_loginwith_OpenID" class="users_loginscreen_loginwith_button" method="post" action="{modurl modname='Users' type='user' func='loginScreen'}" enctype="application/x-www-form-urlencoded">
+<form id="users_loginscreen_loginwith_OpenID" class="users_loginscreen_loginwith" method="post" action="{modurl modname='Users' type='user' func='loginScreen'}" enctype="application/x-www-form-urlencoded">
     <div>
         <input type="hidden" id="openid_authid_OpenID" name="authid" value="{$openid_authkey}" />
         <input type="hidden" id="loginwith_OpenID" name="loginwith" value="OpenID" />
