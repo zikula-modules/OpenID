@@ -1,35 +1,35 @@
 input#users_loginblock_loginwith_button_OpenID {
-    background-image: url("../images/extrasmall/openid-icon.png");
+    background: transparent url("../images/extrasmall/openid-icon.png") no-repeat scroll center left;
 }
 
 input#users_loginscreen_loginwith_button_OpenID {
-    background-image: url("../images/medium/openid-icon.png");
+    background: transparent url("../images/medium/openid-icon.png") no-repeat scroll center left;
 }
 
 div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_OpenID {
-    background-image: url("../images/small/openid-icon.png");
+    background: transparent url("../images/small/openid-icon.png") no-repeat scroll center left;
 }
 
 input#users_loginblock_loginwith_button_Google {
-    background-image: url("../images/extrasmall/google-favicon.png");
+    background: transparent url("../images/extrasmall/google-favicon.png") no-repeat scroll center left;
 }
 
 input#users_loginscreen_loginwith_button_Google {
-    background-image: url("../images/medium/google-favicon.png");
+    background: transparent url("../images/medium/google-favicon.png") no-repeat scroll center left;
 }
 
 div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_Google {
-    background-image: url("../images/small/google-favicon.png");
+    background: transparent url("../images/small/google-favicon.png") no-repeat scroll center left;
 }
 
 input#users_loginblock_loginwith_button_PIP {
-    background-image: url("../images/extrasmall/symantec-checkmark-only-logo.png");
+    background: transparent url("../images/extrasmall/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
 
 input#users_loginscreen_loginwith_button_PIP {
-    background-image: url("../images/medium/symantec-checkmark-only-logo.png");
+    background: transparent url("../images/medium/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
 
 div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_PIP {
-    background-image: url("../images/small/symantec-checkmark-only-logo.png");
+    background: transparent url("../images/small/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
