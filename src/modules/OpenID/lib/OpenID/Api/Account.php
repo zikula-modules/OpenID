@@ -17,7 +17,7 @@
  * @package Zikula
  * @subpackage OpenID
  */
-class OpenID_Api_Account extends Zikula_Api
+class OpenID_Api_Account extends Zikula_AbstractApi
 {
     /**
      * Return an array of items to show in the the user's account panel.
@@ -29,10 +29,10 @@ class OpenID_Api_Account extends Zikula_Api
         $items = array();
 
         $items[] = array(
-            'url' => ModUtil::url('OpenID', 'user', 'view'),
-            'module' => 'OpenID',
-            'icon' => 'large/openid-icon.png',
-            'title' => $this->__('OpenID manager'),
+            'url'       => ModUtil::url('OpenID', 'user', 'view'),
+            'module'    => 'OpenID',
+            'icon'      => 'large/openid-icon.png',
+            'title'     => $this->__('OpenID manager'),
         );
 
         // Return the items

@@ -1,8 +1,5 @@
 {gt text="My OpenIDs" assign=templatetitle}
-{pagesetvar name='title' value=$templatetitle}
-
 <h2>{$templatetitle}</h2>
-
 {insert name='getstatusmsg'}
 {if !empty($openids)}
 <table class="z-datatable">
@@ -18,14 +15,14 @@
         <tr class="{cycle values='z-odd,z-even'}">
             <td>
                 {strip}
-                {switch expr=$openid.openid_type}
+                {switch expr=$openid.login_method|lower}
                 {case expr='google'}
                 <a href="http://www.google.com/accounts/">{gt text='Google Account'}</a>
                 {/case}
                 {case expr='googleapp'}
                 <a href="http://www.google.com/a/">{gt text='Google Apps Hosted Account'}</a>
                 {/case}
-                {case expr='verisign'}
+                {case expr='pip'}
                 <a href="http://pip.verisignlabs.com/">{gt text='VeriSign Personal Identity Portal'}</a>
                 {/case}
                 {case}
@@ -36,7 +33,7 @@
             </td>
             <td title="{gt text='Claimed ID: %1$s' tag1=$openid.claimed_id|safehtml}">
                 {strip}
-                {if $openid.openid_type == 'google'}
+                {if $openid.login_method|lower == 'google'}
                 {assign var='linkopen' value='<a href="http://www.google.com/accounts/">'}
                 {assign var='linkclose' value='</a>'}
                 {elseif substr($openid.claimed_id, 0, 4) == 'http'}

@@ -8,47 +8,15 @@ OpenID.LoginBlock =
 {
     init: function()
     {
-        if ($('users_loginblock_loginwith_OpenID') != null) {
-            $('users_loginblock_loginwith_OpenID').observe('submit', function(event) { OpenID.LoginBlock.onSubmitLoginWithOpenID(event, 'OpenID'); });
+        if ($('users_loginblock_select_authentication_form_openid_openid') != null) {
+            $('users_loginblock_select_authentication_form_openid_openid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_openid'); });
         }
-        if ($('users_loginblock_loginwith_Google') != null) {
-            $('users_loginblock_loginwith_Google').observe('submit', function(event) { OpenID.LoginBlock.onSubmitLoginWithOpenID(event, 'Google'); });
+        if ($('users_loginblock_select_authentication_form_openid_google') != null) {
+            $('users_loginblock_select_authentication_form_openid_google').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_google'); });
         }
-        if ($('users_loginblock_loginwith_PIP') != null) {
-            $('users_loginblock_loginwith_PIP').observe('submit', function(event) { OpenID.LoginBlock.onSubmitLoginWithOpenID(event, 'PIP'); });
+        if ($('users_loginblock_select_authentication_form_openid_pip') != null) {
+            $('users_loginblock_select_authentication_form_openid_pip').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_pip'); });
         }
-    },
-
-    onSubmitLoginWithOpenID: function(event, openidType)
-    {
-        Zikula.Users.LoginBlock.changingLoginBlockFields(true);
-
-        var r = new Zikula.Ajax.Request(
-            Zikula.Config.baseURL + "ajax.php?module=OpenID&func=getLoginBlockFields&openidtype=" + openidType,
-            {
-                method: 'post',
-                authid: 'openid_authid',
-                onComplete: OpenID.LoginBlock.getLoginWithOpenIDResponse
-            });
-
-        event.stop();
-    },
-
-    getLoginWithOpenIDResponse: function(req)
-    {
-        if (!req.isSuccess()) {
-            $('users_loginblock_waiting').addClassName('z-hide');
-            Zikula.showajaxerror(req.getMessage());
-            return;
-        }
-
-        var data = req.getData();
-
-        Element.update('users_loginblock_fields', data.content);
-        $('users_authmodule').setValue('OpenID');
-        
-        Zikula.Users.LoginBlock.changingLoginBlockFields(false);
-        $('users_loginblock_loginwith_' + data.openidType).addClassName('z-hide');
     }
 
 }

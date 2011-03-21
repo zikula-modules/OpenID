@@ -1,12 +1,12 @@
 <?php
 
-class OpenID_Helper extends Zikula_Base
+class OpenID_Helper_OpenID extends Zikula_AbstractBase
 {
     protected $supplied_id;
 
-    public function __construct(array $authinfo)
+    public function __construct(array $authenticationInfo)
     {
-        $this->supplied_id = $authinfo['supplied_id'];
+        $this->supplied_id = $authenticationInfo['supplied_id'];
     }
 
     public function getSuppliedId()

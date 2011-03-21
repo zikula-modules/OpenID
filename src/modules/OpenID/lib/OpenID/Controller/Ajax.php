@@ -15,7 +15,7 @@
 /**
  * Access to actions initiated through AJAX for the OpenID module.
  */
-class OpenID_Controller_Ajax extends Zikula_Controller
+class OpenID_Controller_Ajax extends Zikula_Controller_AbstractAjax
 {
     /**
      * Post setup.
@@ -27,23 +27,4 @@ class OpenID_Controller_Ajax extends Zikula_Controller
         // no need for a Zikula_View so override it.
     }
     
-    public function getLoginBlockFields()
-    {
-        if (!SecurityUtil::confirmAuthKey()) {
-            LogUtil::registerAuthidError();
-            throw new Zikula_Exception_Fatal();
-        }
-
-        $openidType = FormUtil::getPassedValue('openidtype', 'OpenID', 'GETPOST');
-        $loginBlockFields = ModUtil::func('OpenID', 'Auth', 'loginBlockFields', array(
-            'openidtype'    => strtolower($openidType),
-        ));
-
-        $result = array(
-            'content'   => $loginBlockFields,
-            'openidType'=> $openidType,
-        );
-
-        return new Zikula_Response_Ajax($result);
-    }
 }

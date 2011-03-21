@@ -1,10 +1,10 @@
 <?php
 
-class OpenID_Helper_Google extends OpenID_Helper
+class OpenID_Helper_Google extends OpenID_Helper_OpenID
 {
     const USER_ENDPOINT = "https://www.google.com/accounts/o8/id";
 
-    public function __construct(array $authinfo)
+    public function __construct(array $authenticationInfo)
     {
     }
 

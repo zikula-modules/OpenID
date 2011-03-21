@@ -12,7 +12,7 @@
  * information regarding copyright and licensing.
  */
 
-class OpenID_Controller_User extends Zikula_Controller
+class OpenID_Controller_User extends Zikula_AbstractController
 {
     /**
      * Redirects the user to the main OpenID module function; in this case, the view function.
@@ -53,20 +53,21 @@ class OpenID_Controller_User extends Zikula_Controller
             return LogUtil::registerPermissionError();
         }
 
-        $authinfo = SessionUtil::getVar('authinfo', array(), 'OpenID_newOpenID', false);
-        SessionUtil::delVar('OpenID_newOpenID');
+        $authenticationInfo = SessionUtil::getVar('authentication_info', array(), '/OpenID_Controller_User_newOpenID', false);
+        SessionUtil::delVar('OpenID_Controller_User_newOpenID', false, '/');
 
-        if (!isset($authinfo['openid_type']) || empty($authinfo['openid_type'])) {
-            $authinfo['openid_type'] = FormUtil::getPassedValue('openidtype', 'openid', 'GET');
+        if (!isset($authenticationInfo['authentication_method']) || empty($authenticationInfo['authentication_method'])) {
+            $authenticationInfo['authentication_method'] = FormUtil::getPassedValue('authentication_method', 'OpenID', 'GET');
         }
 
         $supportsSSL = function_exists('openssl_open');
-        if (!$supportsSSL && (($authinfo['openid_type'] == 'google') || ($authinfo['openid_type'] == 'googleapps'))) {
-            $authinfo['openid_type'] = 'openid';
+        // TODO - Huh? Wha...? Change from Google to OpenID?
+        if (!$supportsSSL && (($authenticationInfo['authentication_method'] == 'Google'))) {
+            $authenticationInfo['authentication_method'] = 'OpenID';
         }
 
         $this->view->add_core_data()
-            ->assign('authinfo', $authinfo)
+            ->assign('authentication_info', $authenticationInfo)
             ->assign('supports_ssl', $supportsSSL);
         return $this->view->fetch('openid_user_newopenid.tpl');
     }
@@ -83,37 +84,38 @@ class OpenID_Controller_User extends Zikula_Controller
         }
 
         if (System::serverGetVar('REQUEST_METHOD', false) == 'POST') {
-            $authinfo = FormUtil::getPassedValue('authinfo', array());
+            $authenticationInfo = FormUtil::getPassedValue('authentication_info', array());
         } else {
             // This function calls an authmodule's checkPassword function, which requires that 
             // this controller function be reentrant.
-            $authinfo = SessionUtil::getVar('authinfo', null, '/OpenID_Controller_addOpenID', false, false);
-            SessionUtil::delVar('OpenID_Controller_addOpenID');
+            $authenticationInfo = SessionUtil::getVar('authenticationInfo', null, '/OpenID/addOpenID', false, false);
+            SessionUtil::delVar('/OpenID/addOpenID');
         }
 
-        if (!isset($authinfo) || empty($authinfo) || !is_array($authinfo)) {
+        if (!isset($authenticationInfo) || empty($authenticationInfo) || !is_array($authenticationInfo)) {
             return LogUtil::registerError($this->__('Your must supply the requested information.'), null,
                 ModUtil::url($this->getName(), 'user', 'newOpenID'));
         }
 
         // About to call an authmodule checkPassword function, so we must set up the ability to be reentrant.
         SessionUtil::requireSession();
-        SessionUtil::setVar('authinfo', $authinfo, '/OpenID_Controller_addOpenID', true, true);
+        SessionUtil::setVar('authenticationInfo', $authenticationInfo, '/OpenID/addOpenID', true, true);
 
-        $passwordValidates = ModUtil::apiFunc($this->getName(), 'auth', 'checkPassword', array(
-            'authinfo'          => $authinfo,
-            'set_claimed_id'    => true,
-            'reentrant_url'     => System::getCurrentUrl(array('authid' => SecurityUtil::generateAuthKey($this->getName()))),
+        $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(
+            'authentication_info'   => $authenticationInfo,
+            'authentication_method' => $authenticationMethod,
+            'set_claimed_id'        => '/OpenID_Controller_User_addOpenID',
+            'reentrant_url'         => System::getCurrentUrl(array('authid' => SecurityUtil::generateAuthKey($this->getName()))),
         ));
-        SessionUtil::delVar('OpenID_Controller_addOpenID');
+        SessionUtil::delVar('authenticationInfo', false, '/OpenID_Controller_addOpenID');
 
         if ($passwordValidates) {
-            $authinfo['claimed_id'] = SessionUtil::getVar('claimed_id', false, '/OpenID_Auth', false);
-            SessionUtil::delVar('OpenID_Auth');
+            $authenticationInfo['claimed_id'] = SessionUtil::getVar('claimed_id', false, '/OpenID_Controller_User_addOpenID', false);
+            SessionUtil::delVar('OpenID_Controller_User_addOpenID');
 
-            if (!empty($authinfo['claimed_id'])) {
+            if (!empty($authenticationInfo['claimed_id'])) {
                 $saved = ModUtil::apiFunc($this->getName(), 'user', 'addOpenID', array(
-                    'authinfo' => $authinfo,
+                    'authenticationInfo' => $authenticationInfo,
                 ));
 
                 if (!$saved && !LogUtil::hasErrors()) {
@@ -125,7 +127,7 @@ class OpenID_Controller_User extends Zikula_Controller
                     ModUtil::url($this->getName(), 'user', 'view'));
             }
         } else {
-            SessionUtil::setVar('authinfo', $authinfo, 'OpenID_newOpenID');
+            SessionUtil::setVar('authenticationInfo', $authenticationInfo, '/OpenID/newOpenID');
             return LogUtil::registerError($this->__('Your OpenID was not authorized by the OpenID provider, or the provider could not be contacted.'), null,
                 ModUtil::url($this->getName(), 'user', 'newOpenID'));
         }
@@ -134,7 +136,7 @@ class OpenID_Controller_User extends Zikula_Controller
     public function legalNotice()
     {
         $returnURL = FormUtil::getPassedValue('legalreturn', '', 'GET');
-        return $this->view->assign('return_url', $returnURL)
+        return $this->view->assign('returnURL', $returnURL)
             ->fetch('openid_user_legalnotice.tpl');
     }
 

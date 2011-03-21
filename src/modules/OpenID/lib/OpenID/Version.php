@@ -13,28 +13,39 @@
  * information regarding copyright and licensing.
  */
 
-class OpenID_Version extends Zikula_Version
+class OpenID_Version extends Zikula_AbstractVersion
 {
     public function getMetaData()
     {
-        $meta = array();
-        $meta['name']           = 'OpenID';
-        $meta['displayname']    = __('OpenID for Zikula');
-        $meta['description']    = __('Provides OpenID authentication for Zikula user accounts.');
-        //! module name that appears in URL
-        $meta['url']            = __('openid');
-        $meta['capabilities'] = array('authentication' => array('version' => '1.0'));
+        $meta = array(
+            // Module name
+            'name'          => 'OpenID',
 
-        $meta['version']        = '0.0.1';
+            // Current module version
+            'version'       => '0.0.1',
 
-        $meta['author']         = 'RMBurkhead';
-        $meta['contact']        = 'http://code.zikula.org/OpenID';
+            // How the module name appears in URL
+            'url'           => __('openid'),
 
-        $meta['securityschema'] = array(
-            'OpenID::self'  => '::',
-            'OpenID::'      => 'User ID::',
+            // Display name (mostly for Extensions)
+            'displayname'   => __('OpenID for Zikula'),
+
+            // Description (mostly for Extensions)
+            'description'   => __('Provides OpenID authentication for Zikula user accounts.'),
+
+            // Advertised module capabilities
+            'capabilities'  => array(
+                'authentication'    => array(
+                    'version'   => '1.0.0'
+                )
+            ),
+            
+            // Security schema help
+            'securityschema' => array(
+                'OpenID::self'  => '::',
+                'OpenID::'      => 'User ID::',
+            ),
         );
-        
         return $meta;
     }
 }

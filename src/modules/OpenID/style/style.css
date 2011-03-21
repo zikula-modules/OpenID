@@ -1,35 +1,35 @@
-input#users_loginblock_loginwith_button_OpenID {
+#users_loginblock_select_authentication_openid_openid_submit {
     background: transparent url("../images/extrasmall/openid-icon.png") no-repeat scroll center left;
 }
 
-input#users_loginscreen_loginwith_button_OpenID {
+input#users_login_select_authentication_openid_openid_submit {
     background: transparent url("../images/medium/openid-icon.png") no-repeat scroll center left;
 }
 
-div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_OpenID {
+div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_openid_submit {
     background: transparent url("../images/small/openid-icon.png") no-repeat scroll center left;
 }
 
-input#users_loginblock_loginwith_button_Google {
+#users_loginblock_select_authentication_openid_google_submit {
     background: transparent url("../images/extrasmall/google-favicon.png") no-repeat scroll center left;
 }
 
-input#users_loginscreen_loginwith_button_Google {
+input#users_login_select_authentication_openid_google_submit {
     background: transparent url("../images/medium/google-favicon.png") no-repeat scroll center left;
 }
 
-div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_Google {
+div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_google_submit {
     background: transparent url("../images/small/google-favicon.png") no-repeat scroll center left;
 }
 
-input#users_loginblock_loginwith_button_PIP {
+#users_loginblock_select_authentication_openid_pip_submit {
     background: transparent url("../images/extrasmall/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
 
-input#users_loginscreen_loginwith_button_PIP {
+input#users_login_select_authentication_openid_pip_submit {
     background: transparent url("../images/medium/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }
 
-div.users_loginwith_smallbutton input#users_loginscreen_loginwith_button_PIP {
+div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_pip_submit {
     background: transparent url("../images/small/symantec-checkmark-only-logo.png") no-repeat scroll center left;
 }

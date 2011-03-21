@@ -1,14 +1,14 @@
 <?php
 
-class OpenID_Helper_VeriSignPIP extends OpenID_Helper
+class OpenID_Helper_VeriSignPIP extends OpenID_Helper_OpenID
 {
     const USER_ENDPOINT = 'http://%s.pip.verisignlabs.com/';
 
     protected $supplied_id;
 
-    public function __construct(array $authinfo)
+    public function __construct(array $authenticationInfo)
     {
-        $this->supplied_id = $authinfo['supplied_id'];
+        $this->supplied_id = $authenticationInfo['supplied_id'];
     }
 
     public function getSuppliedId()

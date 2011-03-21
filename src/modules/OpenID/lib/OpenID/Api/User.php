@@ -12,7 +12,7 @@
  * information regarding copyright and licensing.
  */
 
-class OpenID_Api_User extends Zikula_Api
+class OpenID_Api_User extends Zikula_AbstractApi
 {
     /**
      * Retrieves an OpenID record for the user currently logged in.
@@ -177,23 +177,23 @@ class OpenID_Api_User extends Zikula_Api
             return LogUtil::registerPermissionError();
         }
 
-        if (!isset($args['authinfo']) || empty($args['authinfo']) || !is_array($args['authinfo'])) {
+        if (!isset($args['authenticationInfo']) || empty($args['authenticationInfo']) || !is_array($args['authenticationInfo'])) {
             return LogUtil::registerArgsError();
         }
-        $authinfo = $args['authinfo'];
+        $authenticationInfo = $args['authenticationInfo'];
 
-        if (!isset($authinfo['claimed_id']) || empty($authinfo['claimed_id'])
-            || !isset($authinfo['openid_type']) || empty($authinfo['openid_type']))
+        if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])
+            || !isset($authenticationInfo['authentication_method']) || empty($authenticationInfo['authentication_method']))
         {
             return LogUtil::registerArgsError();
         }
 
-        $openidHelper = OpenID_HelperBuilder::buildInstance($authinfo['openid_type'], $authinfo);
+        $openidHelper = OpenID_HelperBuilder::buildInstance($authenticationInfo['authentication_method'], $authenticationInfo);
         if ($openidHelper == false) {
             return LogUtil::registerArgsError();
         }
 
-        $claimedID = $authinfo['claimed_id'];
+        $claimedID = $authenticationInfo['claimed_id'];
         $uid = UserUtil::getVar('uid');
 
         $thisUserCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll', array(
@@ -218,10 +218,10 @@ class OpenID_Api_User extends Zikula_Api
             try {
                 $userMap = new OpenID_Model_UserMap();
                 $userMap->fromArray(array(
-                    'uid'           => $uid,
-                    'openid_type'   => $authinfo['openid_type'],
-                    'claimed_id'    => $claimedID,
-                    'display_id'    => $openidHelper->getDisplayName($claimedID),
+                    'uid'                   => $uid,
+                    'authentication_method' => $authenticationInfo['authentication_method'],
+                    'claimed_id'            => $claimedID,
+                    'display_id'            => $openidHelper->getDisplayName($claimedID),
                 ));
                 $userMap->save();
                 return true;

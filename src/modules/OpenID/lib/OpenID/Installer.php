@@ -13,7 +13,7 @@
  * information regarding copyright and licensing.
  */
 
-class OpenID_Installer extends Zikula_Installer
+class OpenID_Installer extends Zikula_AbstractInstaller
 {
     /**
      * initialise the template module

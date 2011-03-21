@@ -24,7 +24,3 @@ if ((strpos($includePath, PATH_SEPARATOR . $libVendorPath) === false)
     set_include_path((!empty($includePath) ? $includePath . PATH_SEPARATOR : '') . $libVendorPath);
 }
 define('Auth_OpenID_RAND_SOURCE', null);
-
-// TODO - This must be old code.
-//$authApi = ModUtil::getObject('OpenID_Api_Auth'); // this will additionally register the service.
-//EventUtil::attachService('users.delete', new Zikula_ServiceHandler('module.openid.api.auth', 'deleteUserEvent'));
