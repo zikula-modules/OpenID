@@ -26,9 +26,29 @@ ZLoader::autoload('Auth_Yadis_Manager');
 class OpenID_PHPSession extends Auth_Yadis_PHPSession
 {
     /**
-     * The path used with SessionUtil for all Yadis session variables
+     * The namespace used for all Yadis session variables.
      */
-    const OPENID_SESSIONPATH = '/OpenID/Yadis';
+    const OPENID_YADIS_SESSION_NAMESPACE = 'OpenID_Yadis';
+    
+    /**
+     * A reference to the Zikula service manager.
+     * 
+     * @var Zikula_ServiceManager
+     */
+    protected $serviceManager;
+    
+    /**
+     * A reference to the Zikula HTTP request service.
+     * 
+     * @var Zikula_Request_Http
+     */
+    protected $request;
+    
+    public function __construct()
+    {
+        $this->serviceManager = ServiceUtil::getManager();
+        $this->request = $this->serviceManager->getService('request');
+    }
 
     /**
      * Set a session key/value pair.
@@ -38,7 +58,7 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      */
     function set($name, $value)
     {
-        SessionUtil::setVar($name, $value, self::OPENID_SESSIONPATH, true, true);
+        $this->request->getSession()->set($name, $value, self::OPENID_YADIS_SESSION_NAMESPACE);
     }
 
     /**
@@ -52,7 +72,7 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      */
     function get($name, $default=null)
     {
-        return SessionUtil::getVar($name, $default, self::OPENID_SESSIONPATH, false, false);
+        return $this->request->getSession()->get($name, $default, self::OPENID_YADIS_SESSION_NAMESPACE);
     }
 
     /**
@@ -62,7 +82,7 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      */
     function del($name)
     {
-        SessionUtil::delVar($name, null, self::OPENID_SESSIONPATH);
+        $this->request->getSession()->del($name, self::OPENID_YADIS_SESSION_NAMESPACE);
     }
 
     /**
@@ -70,6 +90,6 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      */
     function contents()
     {
-        return SessionUtil::getVar(self::OPENID_SESSIONPATH, array(), '/');
+        return $this->request->getSession()->getNamespaceContents(self::OPENID_YADIS_SESSION_NAMESPACE);
     }
 }

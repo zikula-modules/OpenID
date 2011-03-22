@@ -7,7 +7,7 @@ class OpenID_Helper_Builder
         try {
             switch (strtolower($authenticationMethod)) {
                 case 'openid':
-                    return new OpenID_Helper($authenticationInfo);
+                    return new OpenID_Helper_OpenID($authenticationInfo);
                     break;
                 case 'google':
                     return new OpenID_Helper_Google($authenticationInfo);

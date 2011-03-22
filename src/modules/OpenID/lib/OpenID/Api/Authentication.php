@@ -102,7 +102,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         if (isset($args) && isset($args['filter'])) {
             if (is_numeric($args['filter']) && ((int)$args['filter'] == $args['filter'])) {
                 switch($args['filter']) {
-                    case Zikula_Api_Authentication::FILTER_ENABLED:
+                    case Zikula_Api_AbstractAuthentication::FILTER_ENABLED:
                         $filter = $args['filter'];
                         break;
                     default:
@@ -113,11 +113,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 throw new OpenID_Exception_InternalError($this->__f('An invalid value for the \'filter\' parameter was received (\'%1$s\').', array($args['filter'])));
             }
         } else {
-            $filter = Zikula_Api_Authentication::FILTER_NONE;
+            $filter = Zikula_Api_AbstractAuthentication::FILTER_NONE;
         }
 
         switch ($filter) {
-            case Zikula_Api_Authentication::FILTER_ENABLED:
+            case Zikula_Api_AbstractAuthentication::FILTER_ENABLED:
                 $authenticationMethods = array();
                 foreach ($this->authenticationMethods as $index => $authenticationMethod) {
                     if ($authenticationMethod->isEnabledForAuthentication()) {
@@ -179,7 +179,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             return LogUtil::registerArgsError();
         }
 
-        $openidHelper = OpenID_HelperBuilder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)){
             return LogUtil::registerArgsError();
         }
@@ -192,15 +192,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         }
 
         $openidNamespace = FormUtil::getPassedValue('openid_ns', null, 'GET');
-        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_ZikulaOpenIDStore(), new OpenID_PHPSession());
+        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_ZikulaOpenIDStore()/*, new OpenID_PHPSession()*/);
 
         if (!isset($openidNamespace) || empty($openidNamespace)) {
             // We are NOT returing from a previous redirect to the authorizing provider
 
             // Save the reentrantURL for later use
             SessionUtil::requireSession();
-            SessionUtil::delVar('OpenID_Authentication_checkPassword', false, '/');
-            SessionUtil::setVar('reentrant_url', $reentrantURL, '/OpenID_Authentication_checkPassword', true, true);
+            $this->request->getSession()->clearNamespace('OpenID_Authentication_checkPassword');
+            $this->request->getSession()->set('reentrant_url', $reentrantURL, 'OpenID_Authentication_checkPassword');
 
             // Build a request instance
             $openidAuthRequest = @$openidConsumer->begin($openidHelper->getSuppliedId());
@@ -254,8 +254,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             // We ARE returning from a previous redirect to the OpenID server
 
             // Get the reentrantURL we saved earlier
-            $reentrantURL = SessionUtil::getVar('reentrant_url', '', '/OpenID_Authentication_checkPassword', false, false);
-            SessionUtil::delVar('OpenID_Authentication_checkPassword', false, '/');
+            $reentrantURL = $this->request->getSession()->get('reentrant_url', '', 'OpenID_Authentication_checkPassword');
+            $this->request->getSession()->clearNamespace('OpenID_Authentication_checkPassword');
 
             // Get the response status
             $response = $openidConsumer->complete($reentrantURL);
@@ -275,7 +275,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
                 // Set a session variable, if necessary, with the claimed id.
                 if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
-                    SessionUtil::setVar('claimed_id', $claimedID, $args['set_claimed_id'], true, true);
+                    $this->request->getSession()->set('claimed_id', $claimedID, $args['set_claimed_id']);
                 }
 
                 return true;
@@ -358,16 +358,16 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(
             'authentication_info'   => $args['authentication_info'],
             'authentication_method' => $args['authentication_method'],
-            'set_claimed_id'        => '/OpenID_Authentication_authenticateUser',
+            'set_claimed_id'        => 'OpenID_Authentication_authenticateUser',
             'reentrant_url'         => (isset($args['reentrant_url']) ? $args['reentrant_url'] : null),
         ));
 
         if ($passwordValidates) {
-            $claimedID = SessionUtil::getVar('claimed_id', false, '/OpenID_Authentication_authenticateUser', false, false);
-            SessionUtil::delVar('/OpenID_Authentication_authenticateUser');
+            $claimedID = $this->request->getSession()->get('claimed_id', false, 'OpenID_Authentication_authenticateUser');
+            $this->request->getSession()->clearNamespace('OpenID_Authentication_authenticateUser');
             $args['authentication_info']['claimed_id'] = $claimedID;
 
-            $uid = ModUtil::apiFunc($this->getName(), 'Authentication', 'getUidForAuthenticationInfo', $args, 'Zikula_Api_Authentication');
+            $uid = ModUtil::apiFunc($this->getName(), 'Authentication', 'getUidForAuthenticationInfo', $args, 'Zikula_Api_AbstractAuthentication');
 
             if ($uid) {
                 return $uid;

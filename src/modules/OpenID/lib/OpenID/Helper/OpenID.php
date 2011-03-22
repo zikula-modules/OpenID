@@ -2,22 +2,22 @@
 
 class OpenID_Helper_OpenID extends Zikula_AbstractBase
 {
-    protected $supplied_id;
+    protected $suppliedId;
 
     public function __construct(array $authenticationInfo)
     {
-        $this->supplied_id = $authenticationInfo['supplied_id'];
+        $this->suppliedId = $authenticationInfo['suppliedId'];
     }
 
     public function getSuppliedId()
     {
-        return $this->supplied_id;
+        return $this->suppliedId;
     }
 
-    public function getDisplayName($claimedID)
+    public function getDisplayName($claimedId)
     {
-        if ((substr($claimedID, 0, 7) == 'http://') || (substr($claimedID, 0, 8) == 'https://')) {
-            $urlParts = @parse_url($claimedID);
+        if ((substr($claimedId, 0, 7) == 'http://') || (substr($claimedId, 0, 8) == 'https://')) {
+            $urlParts = @parse_url($claimedId);
             if ($urlParts) {
                 $displayName = $urlParts['host'];
                 if (isset($urlParts['user']) && !empty($urlParts['user'])) {
@@ -41,12 +41,12 @@ class OpenID_Helper_OpenID extends Zikula_AbstractBase
                     $displayName .= '?' . $urlParts['query'];
                 }
             } else {
-                $displayName = $claimedID;
+                $displayName = $claimedId;
             }
-        } elseif (substr($claimedID, 0, 6) == 'xri://') {
-            $displayName = substr($claimedID, 6);
+        } elseif (substr($claimedId, 0, 6) == 'xri://') {
+            $displayName = substr($claimedId, 6);
         } else {
-            $displayName = $claimedID;
+            $displayName = $claimedId;
         }
 
         return $displayName;

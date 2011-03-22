@@ -1,4 +1,5 @@
-{gt text="OpenID for Zikula Legal Notices" assign=templatetitle}
+{gt text="OpenID for Zikula Legal Notices" assign='templatetitle'}
+{pagesetvar name='title' value=$templatetitle}
 <h2>{$templatetitle}</h2>
 <ul>
     <li>{gt text="Google is a registered trademark of, and Google Apps is a trademark of Google, Inc. The Google logo, the Google 'favicon' icon, and other Google logos, icons or images are copyrighted by, and may be trademarks or service marks of Google, Inc."}</li>
@@ -12,8 +13,8 @@
     {gt text="Absence of a particular trademark, servicemark or copyright notice from the list above does not imply that such a mark or copyright does not exist."}
 </p>
 
-{if !empty($returnURL)}
-<p><a href="{$returnURL}">{gt text='Return to the previous page.'}</a></p>
+{if !empty($returnUrl)}
+<p><a href="{$returnUrl}">{gt text='Return to the previous page.'}</a></p>
 {else}
 <p>{gt text="Use your browser's Back button to return to the previous page."}</p>
 {/if}
