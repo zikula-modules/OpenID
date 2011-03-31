@@ -34,7 +34,7 @@ class OpenID_Model_UserMap extends Doctrine_Record
         $this->hasColumn('uid', 'integer', 4, array(
             'notnull'       => true,
         ));
-        $this->hasColumn('login_method', 'string', 16, array(
+        $this->hasColumn('authentication_method', 'string', 16, array(
             'notnull'       => true,
         ));
         $this->hasColumn('claimed_id', 'string', 255, array(
@@ -49,11 +49,11 @@ class OpenID_Model_UserMap extends Doctrine_Record
             'type'          => 'unique',
         ));
         $this->index('uid_claimed_id', array(
-            'fields'        => array('uid', 'login_method', 'claimed_id'),
+            'fields'        => array('uid', 'authentication_method', 'claimed_id'),
             'type'          => 'unique',
         ));
         $this->index('type_claimed_id', array(
-            'fields'        => array('login_method', 'claimed_id'),
+            'fields'        => array('authentication_method', 'claimed_id'),
         ));
     }
 

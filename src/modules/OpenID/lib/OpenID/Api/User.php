@@ -172,23 +172,33 @@ class OpenID_Api_User extends Zikula_AbstractApi
      */
     public function addOpenID($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT))
-        {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
             return LogUtil::registerPermissionError();
         }
 
-        if (!isset($args['authenticationInfo']) || empty($args['authenticationInfo']) || !is_array($args['authenticationInfo'])) {
+        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             return LogUtil::registerArgsError();
         }
-        $authenticationInfo = $args['authenticationInfo'];
+        
+        $authenticationInfo = $args['authentication_info'];
 
-        if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])
-            || !isset($authenticationInfo['authentication_method']) || empty($authenticationInfo['authentication_method']))
-        {
+        if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])) {
             return LogUtil::registerArgsError();
         }
+        
+        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
+            return LogUtil::registerArgsError();
+        }
+        
+        $authenticationMethod = $args['authentication_method'];
 
-        $openidHelper = OpenID_HelperBuilder::buildInstance($authenticationInfo['authentication_method'], $authenticationInfo);
+        if (!isset($authenticationMethod['modname']) || empty($authenticationMethod['modname']) 
+                || !isset($authenticationMethod['method']) || empty($authenticationMethod['method'])
+                ) {
+            return LogUtil::registerArgsError();
+        }
+        
+        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
         if ($openidHelper == false) {
             return LogUtil::registerArgsError();
         }
@@ -219,7 +229,7 @@ class OpenID_Api_User extends Zikula_AbstractApi
                 $userMap = new OpenID_Model_UserMap();
                 $userMap->fromArray(array(
                     'uid'                   => $uid,
-                    'authentication_method' => $authenticationInfo['authentication_method'],
+                    'authentication_method' => $authenticationMethod['method'],
                     'claimed_id'            => $claimedID,
                     'display_id'            => $openidHelper->getDisplayName($claimedID),
                 ));

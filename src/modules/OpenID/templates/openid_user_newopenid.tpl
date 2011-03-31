@@ -55,8 +55,8 @@
     </div>
 
     <div class="z-formbuttons z-buttons">
-        {button src='button_ok.gif' set='icons/extrasmall' __alt='Submit' __title='Submit' __text='Submit'}
-        <a href="{modurl modname=$module type='user' func='view'}" title="{gt text='Cancel'}">{img modname='core' src='button_cancel.gif' set='icons/extrasmall' __alt='Cancel' __title='Cancel'} {gt text='Cancel'}</a>
+        {button src='button_ok.png' set='icons/extrasmall' __alt='Submit' __title='Submit' __text='Submit'}
+        <a href="{modurl modname=$module type='user' func='view'}" title="{gt text='Cancel'}">{icon type='cancel' size='extrasmall' __alt='Cancel' __title='Cancel'} {gt text='Cancel'}</a>
     </div>
 </form>
 {include file="openid_common_legalfooter.tpl"}

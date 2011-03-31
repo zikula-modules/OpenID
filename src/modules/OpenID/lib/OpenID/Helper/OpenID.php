@@ -6,7 +6,7 @@ class OpenID_Helper_OpenID extends Zikula_AbstractBase
 
     public function __construct(array $authenticationInfo)
     {
-        $this->suppliedId = $authenticationInfo['suppliedId'];
+        $this->suppliedId = $authenticationInfo['supplied_id'];
     }
 
     public function getSuppliedId()

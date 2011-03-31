@@ -7,7 +7,7 @@
         <tr>
             <th>{gt text="Service"}</th>
             <th>{gt text="ID"}</th>
-            <th class="z-right">{gt text="Actions"}</th>
+            <th>{gt text="Actions"}</th>
         </tr>
     </thead>
     <tbody>
@@ -15,7 +15,7 @@
         <tr class="{cycle values='z-odd,z-even'}">
             <td>
                 {strip}
-                {switch expr=$openid.login_method|lower}
+                {switch expr=$openid.authentication_method|lower}
                 {case expr='google'}
                 <a href="http://www.google.com/accounts/">{gt text='Google Account'}</a>
                 {/case}
@@ -33,7 +33,7 @@
             </td>
             <td title="{gt text='Claimed ID: %1$s' tag1=$openid.claimed_id|safehtml}">
                 {strip}
-                {if $openid.login_method|lower == 'google'}
+                {if $openid.authentication_method|lower == 'google'}
                 {assign var='linkopen' value='<a href="http://www.google.com/accounts/">'}
                 {assign var='linkclose' value='</a>'}
                 {elseif substr($openid.claimed_id, 0, 4) == 'http'}
@@ -47,14 +47,15 @@
                 {/strip}
             </td>
             <td>
-                {strip}{foreach from=$actions[$openid.id] item='action'}
+                {strip}{if isset($actions)}
+                {foreach from=$actions[$openid.id] item='action'}
                 {switch expr=$action.name}
                 {case expr='delete'}
-                <a href="{$action.url}">{img modname='core' set='icons/extrasmall' src='delete.gif' title=$action.title|safehtml alt=$action.title|safehtml}</a>
+                <a href="{$action.url}">{icon type='delete' size='extrasmall' title=$action.title|safehtml alt=$action.title|safehtml}</a>
                 {/case}
                 {/switch}
                 {/foreach}
-                {/strip}
+                {/if}{/strip}
             </td>
         </tr>
         {/foreach}
@@ -67,6 +68,6 @@
     {strip}
     {if !empty($openids)}{gt text="Add another OpenID" assign='addText'}{else}{gt text="Add my OpenID" assign='addText'}{/if}
     {/strip}
-    <a href="{modurl modname=$module type='user' func='newOpenID'}" title="{$addText}">{img modname='core' src='edit_add.gif' set='icons/extrasmall' alt=$addText title=$addText} {$addText}</a>
+    <a href="{modurl modname=$module type='user' func='newOpenID'}" title="{$addText}">{icon type='add' size='extrasmall' alt=$addText title=$addText} {$addText}</a>
 </div>
 {include file="openid_common_legalfooter.tpl"}

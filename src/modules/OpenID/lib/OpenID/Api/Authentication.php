@@ -191,8 +191,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             $reentrantURL = System::getCurrentUrl();
         }
 
-        $openidNamespace = FormUtil::getPassedValue('openid_ns', null, 'GET');
-        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_ZikulaOpenIDStore()/*, new OpenID_PHPSession()*/);
+        $openidNamespace = $this->request->getGet()->get('openid_ns', null);
+        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_ZikulaOpenIDStore(), new OpenID_PHPSession());
 
         if (!isset($openidNamespace) || empty($openidNamespace)) {
             // We are NOT returing from a previous redirect to the authorizing provider

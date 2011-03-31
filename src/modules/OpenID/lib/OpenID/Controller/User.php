@@ -50,14 +50,13 @@ class OpenID_Controller_User extends Zikula_AbstractController
      */
     public function newOpenID()
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT))
-        {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
             return LogUtil::registerPermissionError();
         }
         
         $proceedToForm = true;
 
-        if ($this->request->isPost() || ($this->request->isGet() && $this->request->getSession()->has('authenticationMethod', 'OpenID_Controller_User_newOpenID'))) {
+        if ($this->request->isPost() || ($this->request->isGet() && $this->request->getGet()->has('reentranttoken'))) {
             if ($this->request->isPost()) {
                 $this->checkCsrfToken();
                 
@@ -77,35 +76,33 @@ class OpenID_Controller_User extends Zikula_AbstractController
                         break;
                 }
             } else {
-//                if ($this->request->getGet()->has('csrftoken')) {
-//                    $csrfToken = $this->request->getGet()->get('csrftoken');
-//                } else {
-//                    $csrfToken = '';
-//                    $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
-//                }
-//                
-//                $this->checkCsrfToken($csrfToken);
+                if ($this->request->getGet()->has('reentranttoken')) {
+                    $reentrantTokenReceived = $this->request->getGet()->get('reentranttoken');
+                } else {
+                    $reentrantTokenReceived = '';
+                    $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
+                }
                 
                 $authenticationMethod = $this->request->getSession()->get('authenticationMethod', array(), 'OpenID_Controller_User_newOpenID');
                 $authenticationInfo = $this->request->getSession()->get('authenticationInfo', array(), 'OpenID_Controller_User_newOpenID');
+                $reentrantToken = $this->request->getSession()->get('reentrantToken', false, 'OpenID_Controller_User_newOpenID');
                 $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
             }
             
             if (isset($authenticationInfo) && !empty($authenticationInfo) && is_array($authenticationInfo)) {
                 // About to call an authmodule checkPassword function, so we must set up the ability to be reentrant.
-//                if (!isset($csrfToken)) {
-//                    // A csrftoken is not set, so generate one. If one was set, then we are coming back through reentry, and MUST use the previous value.
-//                    $csrfToken = SecurityUtil::generateCsrfToken();
-//                }
                 $this->request->getSession()->set('authenticationMethod', $authenticationMethod, 'OpenID_Controller_User_newOpenID');
                 $this->request->getSession()->set('authenticationInfo', $authenticationInfo, 'OpenID_Controller_User_newOpenID');
+                if (!isset($reentrantToken)) {
+                    $reentrantToken = substr(SecurityUtil::generateCsrfToken(), 0, 10);
+                }
+                $this->request->getSession()->set('reentrantToken', $reentrantToken, 'OpenID_Controller_User_newOpenID');
 
                 $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(
                     'authentication_info'   => $authenticationInfo,
                     'authentication_method' => $authenticationMethod,
-                    'set_claimed_id'        => 'OpenID_Controller_User_addOpenID',
-//                    'reentrant_url'         => System::getCurrentUrl(array('csrftoken' => $csrfToken)),
-                    'reentrant_url'         => System::getCurrentUrl(),
+                    'set_claimed_id'        => 'OpenID_Controller_User_newOpenID',
+                    'reentrant_url'         => ModUtil::url($this->name, 'user', 'newOpenID', array('reentranttoken' => $reentrantToken), null, null, true, true, false),
                 ));
                 
                 $authenticationInfo['claimed_id'] = $this->request->getSession()->get('claimed_id', false, 'OpenID_Controller_User_newOpenID');
@@ -114,7 +111,8 @@ class OpenID_Controller_User extends Zikula_AbstractController
                 if ($passwordValidates) {
                     if (!empty($authenticationInfo['claimed_id'])) {
                         $saved = ModUtil::apiFunc($this->getName(), 'user', 'addOpenID', array(
-                            'authenticationInfo' => $authenticationInfo,
+                            'authentication_info'   => $authenticationInfo,
+                            'authentication_method' => $authenticationMethod,
                         ));
 
                         if (!$saved && !LogUtil::hasErrors()) {
@@ -134,6 +132,8 @@ class OpenID_Controller_User extends Zikula_AbstractController
             }
             
         } elseif ($this->request->isGet()) {
+            $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
+            
             $authenticationMethod['modname'] = $this->name;
             $authenticationMethod['method'] = $this->request->getGet()->get('authentication_method', 'OpenID');
             $authenticationInfo = array();

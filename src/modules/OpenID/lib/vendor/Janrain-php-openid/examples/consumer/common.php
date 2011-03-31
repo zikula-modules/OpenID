@@ -50,7 +50,25 @@ function &getStore() {
      * created elsewhere.  After you're done playing with the example
      * script, you'll have to remove this directory manually.
      */
-    $store_path = "/tmp/_php_consumer_test";
+    $store_path = null;
+    if (function_exists('sys_get_temp_dir')) {
+        $store_path = sys_get_temp_dir();
+    }
+    else {
+        if (strpos(PHP_OS, 'WIN') === 0) {
+            $store_path = $_ENV['TMP'];
+            if (!isset($store_path)) {
+                $dir = 'C:\Windows\Temp';
+            }
+        }
+        else {
+            $store_path = @$_ENV['TMPDIR'];
+            if (!isset($store_path)) {
+                $store_path = '/tmp';
+            }
+        }
+    }
+    $store_path .= DIRECTORY_SEPARATOR . '_php_consumer_test';
 
     if (!file_exists($store_path) &&
         !mkdir($store_path)) {
@@ -58,8 +76,9 @@ function &getStore() {
             " Please check the effective permissions.";
         exit(0);
     }
+	$r = new Auth_OpenID_FileStore($store_path);
 
-    return new Auth_OpenID_FileStore($store_path);
+    return $r;
 }
 
 function &getConsumer() {
@@ -68,8 +87,8 @@ function &getConsumer() {
      * earlier.
      */
     $store = getStore();
-    $consumer =& new Auth_OpenID_Consumer($store);
-    return $consumer;
+	$r = new Auth_OpenID_Consumer($store);
+    return $r;
 }
 
 function getScheme() {

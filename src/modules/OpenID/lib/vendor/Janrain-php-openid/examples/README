@@ -9,7 +9,7 @@ consumer/: OpenID Example Consumer
 ==================================
 
 NOTE: If you want to try the example consumer without installing this
-package, just make sure you add the package's 'Authentication' directory to your
+package, just make sure you add the package's 'Auth' directory to your
 PHP include path.
 
 To try the example consumer implementation, just copy the consumer/

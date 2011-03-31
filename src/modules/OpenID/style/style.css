@@ -3,33 +3,33 @@
 }
 
 input#users_login_select_authentication_openid_openid_submit {
-    background: transparent url("../images/medium/openid-icon.png") no-repeat scroll center left;
+    background-image: url("../images/medium/openid-icon.png");
 }
 
 div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_openid_submit {
-    background: transparent url("../images/small/openid-icon.png") no-repeat scroll center left;
+    background-image: url("../images/small/openid-icon.png");
 }
 
 #users_loginblock_select_authentication_openid_google_submit {
-    background: transparent url("../images/extrasmall/google-favicon.png") no-repeat scroll center left;
+    background-image: url("../images/extrasmall/google-favicon.png");
 }
 
 input#users_login_select_authentication_openid_google_submit {
-    background: transparent url("../images/medium/google-favicon.png") no-repeat scroll center left;
+    background-image: url("../images/medium/google-favicon.png");
 }
 
 div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_google_submit {
-    background: transparent url("../images/small/google-favicon.png") no-repeat scroll center left;
+    background-image: url("../images/small/google-favicon.png");
 }
 
 #users_loginblock_select_authentication_openid_pip_submit {
-    background: transparent url("../images/extrasmall/symantec-checkmark-only-logo.png") no-repeat scroll center left;
+    background-image: url("../images/extrasmall/symantec-checkmark-only-logo.png");
 }
 
 input#users_login_select_authentication_openid_pip_submit {
-    background: transparent url("../images/medium/symantec-checkmark-only-logo.png") no-repeat scroll center left;
+    background-image: url("../images/medium/symantec-checkmark-only-logo.png");
 }
 
 div.users_login_select_authentication_smallbutton input#users_login_select_authentication_openid_pip_submit {
-    background: transparent url("../images/small/symantec-checkmark-only-logo.png") no-repeat scroll center left;
+    background-image: url("../images/small/symantec-checkmark-only-logo.png");
 }

@@ -26,11 +26,12 @@ class OpenID_Installer extends Zikula_AbstractInstaller
             //Doctrine_Core::generateModelsFromDb('ztemp', array(Doctrine_Manager::connection()->getName()), array('generateTableClasses' => true));
 
             DoctrineUtil::createTablesFromModels('OpenID');
-        } catch (Exception $e) {
+        } catch (Doctrine_Exception $e) {
+            $message = $this->__f('An error was encountered while installing the %1$s module.', array($this->getName()));
             if (System::isDevelopmentMode()) {
-                LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
+                $message .= ' ' . $this->__f('The error occurred while creating the tables. The Doctrine Exception message was: %1$s', array($e->getMessage()));
             }
-            return LogUtil::registerError($this->__f('An error was encountered while creating the tables for the %1$s module.', array($this->getName())));
+            $this->registerError($message);
         }
 
         $this->defaultData();
@@ -123,16 +124,25 @@ class OpenID_Installer extends Zikula_AbstractInstaller
      */
     public function uninstall()
     {
-        try {
-            DoctrineUtil::dropTable('openid_user');
-            DoctrineUtil::dropTable('openid_assoc');
-            DoctrineUtil::dropTable('openid_nonce');
-        } catch (Exception $e) {
-            if (System::isDevelopmentMode()) {
-                LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
+        $tables = array(
+            'openid_usermap',
+            'openid_assoc',
+            'openid_nonce',
+        );
+        
+        foreach ($tables as $tableName) {
+            try {
+                DoctrineUtil::dropTable($tableName);
+            } catch (Doctrine_Exception $e) {
+                $message = $this->__f('A database error was encountered while uninstalling the %1$s module. The installation was allowed to proceed.', array($this->getName()));
+                if (System::isDevelopmentMode()) {
+                    $message .= ' ' . $this->__f('The error occurred while dropping the %1$s table. The Doctrine Exception message was: %2$s', array($tableName, $e->getMessage()));
+                }
+                $this->registerError($message);
             }
-            return LogUtil::registerError($this->__f('An error was encountered while dropping the tables for the %1$s module.', array($this->getName())));
         }
+
+        $this->delVars();
 
         // Deletion successful
         return true;
