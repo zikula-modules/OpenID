@@ -7,7 +7,7 @@
  *
  * @license GNU/LGPLv3 (or at your option, any later version).
  * @package Zikula
- * @subpackage OpenID
+ * @subpackage Users
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
@@ -17,13 +17,12 @@
 ZLoader::autoload('Auth_Yadis_Manager');
 
 /**
- * The session class used by the Auth_Yadis_Manager.  This
- * class wraps the default PHP session machinery and should be
- * subclassed if your application doesn't use PHP sessioning.
- *
- * @package OpenID
+ * The session storage class used by the Auth_Yadis_Manager.
+ * 
+ * This class wraps the default PHP session machinery and subclasses the default
+ * machinery to make it compatible with Zikula's session management.
  */
-class OpenID_PHPSession extends Auth_Yadis_PHPSession
+class OpenID_PHPOpenID_SessionStore extends Auth_Yadis_PHPSession
 {
     /**
      * The namespace used for all Yadis session variables.
@@ -44,6 +43,9 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      */
     protected $request;
     
+    /**
+     * Build a new instance of this class, initializing Zikula-specific items.
+     */
     public function __construct()
     {
         $this->serviceManager = ServiceUtil::getManager();
@@ -53,8 +55,10 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
     /**
      * Set a session key/value pair.
      *
-     * @param string $name The name of the session key to add.
+     * @param string $name  The name of the session key to add.
      * @param string $value The value to add to the session.
+     * 
+     * @return void
      */
     function set($name, $value)
     {
@@ -64,11 +68,10 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
     /**
      * Get a key's value from the session.
      *
-     * @param string $name The name of the key to retrieve.
-     * @param string $default The optional value to return if the key
-     * is not found in the session.
-     * @return string $result The key's value in the session or
-     * $default if it isn't found.
+     * @param string $name    The name of the key to retrieve.
+     * @param string $default The optional value to return if the key is not found in the session.
+     * 
+     * @return string $result The key's value in the session or $default if it isn't found.
      */
     function get($name, $default=null)
     {
@@ -79,6 +82,8 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
      * Remove a key/value pair from the session.
      *
      * @param string $name The name of the key to remove.
+     * 
+     * @return void
      */
     function del($name)
     {
@@ -87,6 +92,8 @@ class OpenID_PHPSession extends Auth_Yadis_PHPSession
 
     /**
      * Return the contents of the session in array form.
+     * 
+     * @return mixed The contents of the Yadis session store, specifically, the Zikula session management namespace contents.
      */
     function contents()
     {

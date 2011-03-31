@@ -1,17 +1,20 @@
 <?php
 /**
- * Copyright Zikula Foundation 2009 - Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
  *
- * @license GNU/LGPLv3 (or at your option, any later version).
- * @package Zikula
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+/**
+ * The user authentication services for the log-in process through the OpenID protocol.
+ */
 class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 {
     /**
@@ -24,6 +27,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     protected $authenticationMethods = array();
 
+    /**
+     * Initialize the API instance with the list of valid authentication methods supported.
+     * 
+     * @return void
+     */
     protected function  postInitialize() {
         parent::postInitialize();
 
@@ -57,7 +65,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         $this->authenticationMethods['PIP'] = $authenticationMethod;
     }
 
-     /**
+    /**
      * Informs the calling function whether this authmodule is reentrant or not.
      *
      * The OpenID for Zikula module is reentrant. It must redirect to the OpenID provider for authorization.
@@ -69,12 +77,25 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         return true;
     }
 
+    /**
+     * Indicate whether this module supports the indicated authentication method.
+     * 
+     * Parameters passed in $args:
+     * ---------------------------
+     * string $args['method'] The name of the authentication method for which support is enquired.
+     *
+     * @param array $args All arguments passed to this function, see above.
+     * 
+     * @return boolean True if the indicated authentication method is supported by this module; otherwise false.
+     * 
+     * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
+     */
     public function supportsAuthenticationMethod(array $args)
     {
         if (isset($args['method']) && is_string($args['method'])) {
             $methodName = $args['method'];
         } else {
-            throw new OpenID_Exception_InternalError($this->__('An invalid \'method\' parameter was received.'));
+            throw new Zikula_Exception_Fatal($this->__('An invalid \'method\' parameter was received.'));
         }
 
         $isSupported = (bool)isset($this->authenticationMethods[$methodName]);
@@ -82,21 +103,48 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         return $isSupported;
     }
 
+    /**
+     * Indicates whether a specified authentication method that is supported by this module is enabled for use.
+     * 
+     * Parameters passed in $args:
+     * ---------------------------
+     * string $args['method'] The name of the authentication method for which support is enquired.
+     *
+     * @param array $args All arguments passed to this function, see above.
+     * 
+     * @return boolean True if the indicated authentication method is enabled by this module; otherwise false.
+     * 
+     * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
+     */
     public function isEnabledForAuthentication(array $args)
     {
         if (isset($args['method']) && is_string($args['method'])) {
             if (isset($this->authenticationMethods[$args['method']])) {
                 $authenticationMethod = $this->authenticationMethods[$args['method']];
             } else {
-                throw new OpenID_Exception_InternalError($this->__f('An unknown method (\'%1$s\') was received.', array($args['method'])));
+                throw new Zikula_Exception_Fatal($this->__f('An unknown method (\'%1$s\') was received.', array($args['method'])));
             }
         } else {
-            throw new OpenID_Exception_InternalError($this->__('An invalid \'method\' parameter was received.'));
+            throw new Zikula_Exception_Fatal($this->__('An invalid \'method\' parameter was received.'));
         }
 
         return $authenticationMethod->isEnabledForAuthentication();
     }
 
+    /**
+     * Retrieves an array of authentication methods defined by this module, possibly filtered by only those that are enabled.
+     * 
+     * Parameters passed in $args:
+     * ---------------------------
+     * integer $args['filter'] Either {@link FILTER_ENABLED} (value 1), {@link FILTER_NONE} (value 0), or not present; allows the result to be filtered.
+     *                              If this argument is FILTER_ENABLED, then only those authentication methods that are also enabled are returned.
+     *
+     * @param array $args All arguments passed to this function.
+     * 
+     * @return array An array containing the authentication methods defined by this module, possibly filtered by only those that are enabled.
+     * 
+     * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
+     */
     public function getAuthenticationMethods(array $args = null)
     {
         if (isset($args) && isset($args['filter'])) {
@@ -106,11 +154,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                         $filter = $args['filter'];
                         break;
                     default:
-                        throw new OpenID_Exception_InternalError($this->__f('An unknown value for the \'filter\' parameter was received (\'%1$d\').', array($args['filter'])));
+                        throw new Zikula_Exception_Fatal($this->__f('An unknown value for the \'filter\' parameter was received (\'%1$d\').', array($args['filter'])));
                         break;
                 }
             } else {
-                throw new OpenID_Exception_InternalError($this->__f('An invalid value for the \'filter\' parameter was received (\'%1$s\').', array($args['filter'])));
+                throw new Zikula_Exception_Fatal($this->__f('An invalid value for the \'filter\' parameter was received (\'%1$s\').', array($args['filter'])));
             }
         } else {
             $filter = Zikula_Api_AbstractAuthentication::FILTER_NONE;
@@ -175,12 +223,12 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             return LogUtil::registerArgsError();
         }
 
-        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])){
+        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
             return LogUtil::registerArgsError();
         }
 
         $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
-        if (!isset($openidHelper) || ($openidHelper === false)){
+        if (!isset($openidHelper) || ($openidHelper === false)) {
             return LogUtil::registerArgsError();
         }
 
@@ -192,7 +240,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         }
 
         $openidNamespace = $this->request->getGet()->get('openid_ns', null);
-        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_ZikulaOpenIDStore(), new OpenID_PHPSession());
+        $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_PHPOpenID_OpenIDStore(), new OpenID_PHPOpenID_SessionStore());
 
         if (!isset($openidNamespace) || empty($openidNamespace)) {
             // We are NOT returing from a previous redirect to the authorizing provider

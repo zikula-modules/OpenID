@@ -1,17 +1,20 @@
 <?php
 /**
- * Copyright Zikula Foundation 2009 - Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
  *
- * @license GNU/LGPLv3 (or at your option, any later version).
- * @package Zikula
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+/**
+ * User-oriented API function for the OpenID module.
+ */
 class OpenID_Api_User extends Zikula_AbstractApi
 {
     /**
@@ -20,20 +23,22 @@ class OpenID_Api_User extends Zikula_AbstractApi
      * Either a unique (database record) id, or a unique claimed id must be
      * supplied in order to uniquely identify the record for this user to retrieve.
      *
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * int    $args['id']         The unique database id for the record to retrieve, which must be associated with the
+     *                                  user currently logged in; required if 'claimed_id' is not specified;
+     *                                  cannot be used in conjunction with 'claimed_id'.
+     * string $args['claimed_id'] The claimed OpenID to retrieve, which must be associated with the user currently
+     *                                  logged in; required if 'id' is not specified; cannot be
+     *                                  used in conjunction with 'id'.
+     * 
      * @param array $args All parameters passed to this function.
-     *                      int     $args['id']         The unique database id for the record to retrieve, which must be associated with the
-     *                                                      user currently logged in; required if 'claimed_id' is not specified;
-     *                                                      cannot be used in conjunction with 'claimed_id'.
-     *                      string  $args['claimed_id'] The claimed OpenID to retrieve, which must be associated with the user currently
-     *                                                      logged in; required if 'id' is not specified; cannot be
-     *                                                      used in conjunction with 'id'.
      *
-     * @return array|bool The OpenID record as specified, or an empty array if no such record is found; false on error.
+     * @return array|boolean The OpenID record as specified, or an empty array if no such record is found; false on error.
      */
     public function get($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT))
-        {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
             return LogUtil::registerPermissionError();
         }
 
@@ -70,14 +75,14 @@ class OpenID_Api_User extends Zikula_AbstractApi
     /**
      * Retrieves all OpenIDs associated with the current user.
      *
-     * @param <type> $args
-     * @return array|bool An array of OpenID records associated with the current user; an empty array if there are no
-     *                      OpenIDs associated with the current user; false on error.
+     * @param array $args All parameters passed to this function; not currently used.
+     * 
+     * @return array|boolean An array of OpenID records associated with the current user; an empty array if there are no
+     *                          OpenIDs associated with the current user; false on error.
      */
     public function getAll($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT))
-        {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
             return LogUtil::registerPermissionError();
         }
 
@@ -104,10 +109,13 @@ class OpenID_Api_User extends Zikula_AbstractApi
      * on the user's own data. This function operates across all users. A user-level function should
      * only use this in order to confirm that the claimed id has not been claimed by another account.
      *
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * string $args['claimed_id'] The claimed OpenID to count across all user accounts.
+     * 
      * @param array $args All parameters sent to this function.
-     *                      string $args['claimed_id'] The claimed OpenID to count across all user accounts.
      *
-     * @return int|bool The count across all users accounts; false on error.
+     * @return boolean|integer The count across all users accounts; false on error.
      */
     protected function countAllInternal($args)
     {
@@ -124,16 +132,19 @@ class OpenID_Api_User extends Zikula_AbstractApi
     }
 
     /**
+     * Counts all claimed open IDs either for the current user, or for a specified claimed_id for the current user.
+     * 
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * string $args['claimed_id'] Counts only those records for the current user whose claimed id is equal to this; optional.
      *
      * @param array $args All parameters for this function.
-     *                      string $args['claimed_id'] Counts only those records for the current user whose claimed id is equal to this; optional.
      *
-     * @return int|bool The count for the current user; false on error
+     * @return boolean|integer The count for the current user; false on error.
      */
     public function countAll($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT))
-        {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
             return LogUtil::registerPermissionError();
         }
 
@@ -164,11 +175,14 @@ class OpenID_Api_User extends Zikula_AbstractApi
 
     /**
      * Adds a new claimed OpenID for the current user.
+     * 
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * string $args['claimed_id'] A normalized and validated claimed OpenID
      *
      * @param array $args All arguments passed to the function.
-     *                      string  $args['claimed_id']  A normalized and validated claimed OpenID
      *
-     * @return <type>
+     * @return boolean True if the OpenID was added, otherwise false.
      */
     public function addOpenID($args)
     {

@@ -1,21 +1,19 @@
 <?php
 /**
- * Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
- * @copyright (c) Zikula Development Team
- * @link http://www.zikula.org
- * @version $Id$
- * @license GNU/GPL - http://www.gnu.org/copyleft/gpl.html
- * @package Zikula
- * @subpackage OpenID
+ * This work is contributed to the Zikula Foundation under one or more
+ * Contributor Agreements and licensed to You under the following license:
+ *
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
+ *
+ * Please see the NOTICE file distributed with this source code for further
+ * information regarding copyright and licensing.
  */
 
 /**
- * Controllers provide users access to actions that they can perform on the system;
- * this class provides access to (non-administrative) user-initiated actions for the Users module.
- *
- * @package Zikula
- * @subpackage OpenID
+ * Provides access to administrative initiated actions for the OpenID module.
  */
 class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthentication
 {
@@ -35,7 +33,18 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
     /**
      * Renders the template that displays the input fields for the authentication module in the Users module's login block.
      *
+     * Parameters sent in the $args array:
+     * -----------------------------------
+     * string $args['method']      The name of the authentication method for which the fields should be rendered.
+     * string $args['formType']    The type of form (or block, or plugin, etc.) on which the form fields will appear; used in
+     *                                  computing the template name.
+     *
+     * @param array $args All parameters passed to this function.
+     * 
      * @return string The rendered template.
+     * 
+     * @throws Zikula_Exception_Fatal If the $args array or any parameter it contains is invalid; or if a template cannot be found
+     *                                      for the method and the specified form type.
      */
     public function getLoginFormFields(array $args)
     {
@@ -49,13 +58,13 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             if ($showDetailedErrorMessage) {
                 $errorMessage .= ' ' . $this->__f('Error: The $args array was empty on a call to %1$s.', array(__METHOD__));
             }
-            throw new BadMethodCallException($errorMessage);
+            throw new Zikula_Exception_Fatal($errorMessage);
         } elseif (!is_array($args)) {
             $errorMessage = $genericErrorMessage;
             if ($showDetailedErrorMessage) {
                 $errorMessage .= ' ' . $this->__f('Error: The $args parameter was not an array on a call to %1$s.', array(__METHOD__));
             }
-            throw new InvalidArgumentException($errorMessage);
+            throw new Zikula_Exception_Fatal($errorMessage);
         }
 
         if (isset($args['formType']) && is_string($args['formType'])) {
@@ -67,7 +76,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
                     isset($args['formType']) ? $args['formType'] : 'NULL',
                     __METHOD__));
             }
-            throw new InvalidArgumentException($errorMessage);
+            throw new Zikula_Exception_Fatal($errorMessage);
         }
 
         if (isset($args['method']) && is_string($args['method']) && $this->supportsAuthenticationMethod($args['method'])) {
@@ -79,7 +88,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
                     isset($args['formType']) ? $args['formType'] : 'NULL',
                     __METHOD__));
             }
-            throw new InvalidArgumentException($errorMessage);
+            throw new Zikula_Exception_Fatal($errorMessage);
         }
         // End parameter extraction and error checking
         
@@ -94,8 +103,20 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
 
     /**
      * Renders the template that displays the authentication module's icon in the Users module's login block.
+     * 
+     * Parameters sent in the $args array:
+     * -----------------------------------
+     * string $args['method']      The name of the authentication method for which a selector should be rendered.
+     * string $args['is_selected'] True if the selector for this method is the currently selected selector; otherwise false.
+     * string $args['formType']    The type of form (or block, or plugin, etc.) on which the selector will appear; used in
+     *                                  computing the template name.
+     * 
+     * @param array $args All parameters passed to this function.
      *
      * @return string The rendered template.
+     * 
+     * @throws Zikula_Exception_Fatal If the $args array or any parameter it contains is invalid; or if a template cannot be found
+     *                                      for the method and the specified form type.
      */
     public function getAuthenticationMethodSelector(array $args)
     {
@@ -107,14 +128,14 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
         if (isset($args['formType']) && is_string($args['formType'])) {
             $formType = $args['formType'];
         } else {
-            throw new InvalidArgumentException($this->__f('Error: An invalid formType (\'%1$s\') was received.', array(
+            throw new Zikula_Exception_Fatal($this->__f('Error: An invalid formType (\'%1$s\') was received.', array(
                     isset($args['formType']) ? $args['formType'] : 'NULL')));
         }
 
         if (isset($args['method']) && is_string($args['method']) && $this->supportsAuthenticationMethod($args['method'])) {
             $method = $args['method'];
         } else {
-            throw new InvalidArgumentException($this->__f('Error: An invalid method (\'%1$s\') was received.', array(
+            throw new Zikula_Exception_Fatal($this->__f('Error: An invalid method (\'%1$s\') was received.', array(
                     isset($args['method']) ? $args['method'] : 'NULL')));
         }
         // End parameter extraction and error checking

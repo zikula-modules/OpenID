@@ -1,30 +1,30 @@
 <?php
 /**
- * Copyright Zikula Foundation 2009 - Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
  *
- * @license GNU/LGPLv3 (or at your option, any later version).
- * @package Zikula
- * @subpackage OpenID
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+/**
+ * Installs or upgrades the OpenID module.
+ */
 class OpenID_Installer extends Zikula_AbstractInstaller
 {
     /**
-     * initialise the template module
-     * This function is only ever called once during the lifetime of a particular
-     * module instance
+     * Initialise the template module.
+     * 
+     * @return void
      */
     public function install()
     {
         try {
-            //Doctrine_Core::generateModelsFromDb('ztemp', array(Doctrine_Manager::connection()->getName()), array('generateTableClasses' => true));
-
             DoctrineUtil::createTablesFromModels('OpenID');
         } catch (Doctrine_Exception $e) {
             $message = $this->__f('An error was encountered while installing the %1$s module.', array($this->getName()));
@@ -34,93 +34,39 @@ class OpenID_Installer extends Zikula_AbstractInstaller
             $this->registerError($message);
         }
 
-        $this->defaultData();
-
         // Initialisation successful
         return true;
     }
 
-    protected function defaultData()
-    {
-//        $assoc = new OpenID_Model_OpenIDAssoc();
-//        $assoc->server_url = "http://www.example.com";
-//        $assoc->handle = "first handle";
-//        $assoc->secret = "secret";
-//        $assoc->issued = time();
-//        $assoc->lifetime = 1;
-//        $assoc->assoc_type = "assoc_type";
-//        $assoc->save();
-//
-//        $assoc = new OpenID_Model_OpenIDAssoc();
-//        $assoc->server_url = "http://www.example.com";
-//        $assoc->handle = "second handle";
-//        $assoc->secret = "secret";
-//        $assoc->issued = time();
-//        $assoc->lifetime = 1;
-//        $assoc->assoc_type = "assoc_type";
-//        $assoc->save();
-//
-//        $assoc = new OpenID_Model_OpenIDAssoc();
-//        $assoc->server_url = "http://another.example.com";
-//        $assoc->handle = "first other handle";
-//        $assoc->secret = "secret";
-//        $assoc->issued = time();
-//        $assoc->lifetime = 1;
-//        $assoc->assoc_type = "assoc_type";
-//        $assoc->save();
-//
-//        $assocTable = Doctrine_Core::getTable('OpenID_Model_OpenIDAssoc');
-//
-//        $assoc = $assocTable->getAssoc('http://www.example.com', 'second handle');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc = " . $dump, 'DEBUG');
-//
-//        $assoc = $assocTable->getAllForUrl('http://www.example.com');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc for www.example.com = " . $dump, 'DEBUG');
-//
-//        $assoc = $assocTable->getAllForUrl('http://another.example.com');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc for another.example.com = " . $dump, 'DEBUG');
-//
-//        $assocTable->removeAssoc('http://www.example.com', 'first handle');
-//
-//        $assoc = $assocTable->getAllForUrl('http://www.example.com');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc after remove = " . $dump, 'DEBUG');
-//
-//        sleep(3);
-//
-//        $assocTable->cleanExpired();
-//
-//        $assoc = $assocTable->getAllForUrl('http://www.example.com');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc for www.example.com after clean = " . $dump, 'DEBUG');
-//
-//        $assoc = $assocTable->getAllForUrl('http://www.example.com');
-//        $dump = var_export($assoc, true);
-//        LogUtil::log("assoc for another.example.com after clean = " . $dump, 'DEBUG');
-    }
-
     /**
-     * Upgrade the errors module from an old version
+     * Upgrade the OpenID module from an old version.
      *
      * This function must consider all the released versions of the module!
      * If the upgrade fails at some point, it returns the last upgraded version.
      *
-     * @param        string   $oldVersion   version number string to upgrade from
-     * @return       mixed    true on success, last valid version string or false if fails
+     * @param string $oldVersion Version number string from which the upgrade begins.
+     * 
+     * @return mixed True on success, last valid version string or false if fails.
      */
-    public function upgrade($oldversion)
+    public function upgrade($oldVersion)
     {
+        switch ($oldVersion) {
+            case '1.0.0':
+                // Upgrade old version 1.0.0 to ?.?.?
+                break;
+            default:
+                return $oldVersion;
+                break;
+        }
+        
         // Update successful
         return true;
     }
 
     /**
-     * delete the errors module
-     * This function is only ever called once during the lifetime of a particular
-     * module instance
+     * Delete the OpenID module.
+     * 
+     * @return boolean True if the module was successfully uninstalled; otherwise false.
      */
     public function uninstall()
     {

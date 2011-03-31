@@ -7,22 +7,30 @@
  *
  * @license GNU/LGPLv3 (or at your option, any later version).
  * @package Zikula
- * @subpackage OpenID
+ * @subpackage Users
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+/**
+ * Provides metadata to the Extensions module about this module.
+ */
 class OpenID_Version extends Zikula_AbstractVersion
 {
+    /**
+     * Build and return the metadata about this module for the Extensions module.
+     *
+     * @return array The metadata.
+     */
     public function getMetaData()
     {
         $meta = array(
             // Module name
             'name'          => 'OpenID',
 
-            // Current module version
-            'version'       => '0.0.1',
+            // Current module version always use the major.minor.point standard format!
+            'version'       => '1.0.0-dev',
 
             // How the module name appears in URL
             'url'           => __('openid'),

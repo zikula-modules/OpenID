@@ -1,17 +1,20 @@
 <?php
 /**
- * Copyright Zikula Foundation 2009 - Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
  *
- * @license GNU/LGPLv3 (or at your option, any later version).
- * @package Zikula
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
 
+/**
+ * Provides access to (non-administrative) user-initiated actions for the OpenID module.
+ */
 class OpenID_Controller_User extends Zikula_AbstractController
 {
     /**
@@ -44,9 +47,33 @@ class OpenID_Controller_User extends Zikula_AbstractController
     /**
      * Render a form suitable for adding a new OpenID to the user's account.
      * 
+     * GET Parameters Used:
+     * --------------------
+     * string 'reentranttoken' A nonce used to indicate that the user is returning to this function from a reentrant external call to
+     *                              an external authentication server of some sort (for this module, an OpenID Provider).
+     * 
+     * POST Parameters Used:
+     * ---------------------
+     * string 'authentication_method' The name of one of the authentication methods supported by this module.
+     * string 'openid_identifier'     If the authentication method is set to 'openid' then this contains the identifier supplied by the user.
+     * string 'pip_username'          If the authentication method is set to 'pip' then this is either the PIP user name for the user, or 
+     *                                      the full OpenID URL pointing to the user's PIP account.
+     * 
+     * SESSION Variables Used, 'OpenID_Controller_User_newOpenID' Namespace:
+     * ---------------------------------------------------------------------
+     * array  'authenticationMethod' An array containing the module name ('modname') and method name ('method') that identifies the authentication
+     *                                  method being used. 'modname' will be set to 'OpenID', and 'method' will be set to the value received in
+     *                                  the 'authentication_method' POST parameter.
+     * array  'authenticationInfo'   An array containing the authentication information entered by the user, including the supplied id.
+     * string  'claimed_id'          A normalized and authenticated version of the supplied id which represents the OpenID URL claimed by the user
+     *                                  as identifying him. This is set and returned by the authentication process.
+     * string 'reentrantToken'       The nonce used to signal that the user has exited to and is reentering this function from areentrant external 
+     *                                  call to an OpenID server.
+     * 
      * @return
      * 
-     * @throws Zikula_Exception_Forbidden Thrown if the user is not logged in, does not have comment access for his own record, or the function is access improperly.
+     * @throws Zikula_Exception_Forbidden Thrown if the user is not logged in; does not have comment access for his 
+     *                                          own record; or the function is access improperly.
      */
     public function newOpenID()
     {
@@ -64,13 +91,13 @@ class OpenID_Controller_User extends Zikula_AbstractController
                 $authenticationInfo = array();
                 switch (strtolower($authenticationMethod['method'])) {
                     case 'openid':
-                        $authenticationInfo['suppliedId'] = $this->request->getPost()->get('openid_identifier', '');
+                        $authenticationInfo['supplied_id'] = $this->request->getPost()->get('openid_identifier', '');
                         break;
                     case 'google':
-                        $authenticationInfo['suppliedId'] = 'google';
+                        $authenticationInfo['supplied_id'] = 'google';
                         break;
                     case 'pip':
-                        $authenticationInfo['suppliedId'] = $this->request->getPost()->get('pip_username', '');
+                        $authenticationInfo['supplied_id'] = $this->request->getPost()->get('pip_username', '');
                         break;
                     default:
                         break;
@@ -158,6 +185,15 @@ class OpenID_Controller_User extends Zikula_AbstractController
         }
     }
 
+    /**
+     * Renders and returns the legal notice for the OpenID pages, specifying copyrights, trademarks, etc.
+     * 
+     * GET Parameters used:
+     * --------------------
+     * string 'legalreturn' The URL to which the user should be returned when clicking on the approrpriate link.
+     *
+     * @return string The rendered template.
+     */
     public function legalNotice()
     {
         $returnUrl = $this->request->getGet()->get('legalreturn', '');

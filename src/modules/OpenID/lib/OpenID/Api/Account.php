@@ -1,21 +1,19 @@
 <?php
 /**
- * Zikula Application Framework
+ * Copyright Zikula Foundation 2011 - Zikula Application Framework
  *
- * @copyright 2001 Zikula Development Team
- * @license GNU/GPL - http://www.gnu.org/copyleft/gpl.html
- * @package Zikula
- * @subpackage OpenID
- * @version $Id$
- * @link http://www.zikula.org
+ * This work is contributed to the Zikula Foundation under one or more
+ * Contributor Agreements and licensed to You under the following license:
+ *
+ * @license GNU/LGPv3 (or at your option any later version).
+ * @package OpenID
+ *
+ * Please see the NOTICE file distributed with this source code for further
+ * information regarding copyright and licensing.
  */
 
 /**
- * The Account API provides links for modules on the "user account page"; this
- * class provides those links for the Users module.
- *
- * @package Zikula
- * @subpackage OpenID
+ * The Account API provides links for modules on the "user account page".
  */
 class OpenID_Api_Account extends Zikula_AbstractApi
 {

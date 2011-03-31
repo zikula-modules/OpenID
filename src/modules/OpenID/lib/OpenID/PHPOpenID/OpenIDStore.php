@@ -7,7 +7,7 @@
  *
  * @license GNU/LGPLv3 (or at your option, any later version).
  * @package Zikula
- * @subpackage OpenID
+ * @subpackage Users
  *
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
@@ -17,20 +17,21 @@
 require_once 'Auth/OpenID/Interface.php';
 require_once 'Auth/OpenID/Nonce.php';
 
-class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
+/**
+ * Provides storage services for OpenID protocol housekeeping information maintained by the php-openid library.
+ */
+class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
 {
     /**
-     * This method puts an Association object into storage,
-     * retrievable by server URL and handle.
+     * This method puts an Association object into storage, retrievable by server URL and handle.
      *
-     * @param string $server_url The URL of the identity server that
-     * this association is with. Because of the way the server portion
-     * of the library uses this interface, don't assume there are any
-     * limitations on the character set of the input string. In
-     * particular, expect to see unescaped non-url-safe characters in
-     * the server_url field.
-     *
+     * @param string      $server_url  The URL of the identity server that this association is with. Because of the way the server portion
+     *                                      of the library uses this interface, don't assume there are any limitations on the character set 
+     *                                      of the input string. In particular, expect to see unescaped non-url-safe characters in
+     *                                      the server_url field.
      * @param Association $association The Association to store.
+     * 
+     * @return void
      */
     function storeAssociation($server_url, $association)
     {
@@ -44,7 +45,7 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
         $openidAssoc->replace();
     }
 
-    /*
+    /**
      * Remove expired nonces from the store.
      *
      * Discards any nonce from storage that is old enough that its
@@ -54,7 +55,7 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
      * library.  It provides a way for store admins to keep their
      * storage from filling up with expired data.
      *
-     * @return the number of nonces expired
+     * @return integer The number of nonces expired.
      */
     function cleanupNonces()
     {
@@ -63,14 +64,14 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
         return $nonceTable->cleanExpired($Auth_OpenID_SKEW);
     }
 
-    /*
+    /**
      * Remove expired associations from the store.
      *
      * This method is not called in the normal operation of the
      * library.  It provides a way for store admins to keep their
      * storage from filling up with expired data.
      *
-     * @return the number of associations expired.
+     * @return integer The number of associations expired.
      */
     function cleanupAssociations()
     {
@@ -78,12 +79,14 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
         return $assocTable->cleanExpired();
     }
 
-    /*
+    /**
      * Shortcut for cleanupNonces(), cleanupAssociations().
      *
      * This method is not called in the normal operation of the
      * library.  It provides a way for store admins to keep their
      * storage from filling up with expired data.
+     * 
+     * @return array An array containing the results of {@link cleanupNonces()} and {@link cleanupAssociations()}.
      */
     function cleanup()
     {
@@ -92,7 +95,9 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
     }
 
     /**
-     * Report whether this storage supports cleanup
+     * Report whether this storage supports cleanup.
+     * 
+     * @return boolean True.
      */
     function supportsCleanup()
     {
@@ -100,9 +105,9 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
     }
 
     /**
-     * This method returns an Association object from storage that
-     * matches the server URL and, if specified, handle. It returns
-     * null if no such association is found or if the matching
+     * This method returns an Association object from storage that matches the server URL and, if specified, handle. 
+     * 
+     * It returns null if no such association is found or if the matching
      * association is expired.
      *
      * If no handle is specified, the store may return any association
@@ -114,20 +119,14 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
      * expired associations when found. This method must not return
      * expired associations.
      *
-     * @param string $server_url The URL of the identity server to get
-     * the association for. Because of the way the server portion of
-     * the library uses this interface, don't assume there are any
-     * limitations on the character set of the input string.  In
-     * particular, expect to see unescaped non-url-safe characters in
-     * the server_url field.
+     * @param string $server_url The URL of the identity server to get the association for. Because of the way the server portion of
+     *                              the library uses this interface, don't assume there are any limitations on the character set of 
+     *                              the input string.  In particular, expect to see unescaped non-url-safe characters in
+     *                              the server_url field.
+     * @param mixed  $handle     This optional parameter is the handle of the specific association to get. If no specific handle is
+     *                              provided, any valid association matching the server URL is returned.
      *
-     * @param mixed $handle This optional parameter is the handle of
-     * the specific association to get. If no specific handle is
-     * provided, any valid association matching the server URL is
-     * returned.
-     *
-     * @return Association The Association for the given identity
-     * server.
+     * @return Association The Association for the given identity server.
      */
     function getAssociation($server_url, $handle = null)
     {
@@ -156,20 +155,14 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
     }
 
     /**
-     * This method removes the matching association if it's found, and
-     * returns whether the association was removed or not.
+     * This method removes the matching association if it's found, and returns whether the association was removed or not.
      *
-     * @param string $server_url The URL of the identity server the
-     * association to remove belongs to. Because of the way the server
-     * portion of the library uses this interface, don't assume there
-     * are any limitations on the character set of the input
-     * string. In particular, expect to see unescaped non-url-safe
-     * characters in the server_url field.
-     *
-     * @param string $handle This is the handle of the association to
-     * remove. If there isn't an association found that matches both
-     * the given URL and handle, then there was no matching handle
-     * found.
+     * @param string $server_url The URL of the identity server the association to remove belongs to. Because of the way the server
+     *                              portion of the library uses this interface, don't assume there are any limitations on the 
+     *                              character set of the input string. In particular, expect to see unescaped non-url-safe 
+     *                              characters in the server_url field.
+     * @param string $handle     This is the handle of the association to remove. If there isn't an association found that matches both
+     *                              the given URL and handle, then there was no matching handle found.
      *
      * @return mixed Returns whether or not the given association existed.
      */
@@ -194,9 +187,11 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
      * storeNonce call.  (storeNonce is no longer part of the
      * interface.
      *
-     * @param string $nonce The nonce to use.
+     * @param string  $server_url The URL of the OpenID Server.
+     * @param integer $timestamp  The UNIX timestamp associated with the nonce. 
+     * @param string  $salt       The salt string associated with the nonce.
      *
-     * @return bool Whether or not the nonce was valid.
+     * @return bool True if the nonce was valid (not used) and stored; otherwise false.
      */
     function useNonce($server_url, $timestamp, $salt)
     {
@@ -220,7 +215,11 @@ class OpenID_ZikulaOpenIDStore extends Auth_OpenID_OpenIDStore
     }
 
     /**
-     * Removes all entries from the store; implementation is optional.
+     * Removes all entries from the store.
+     * 
+     * Implementation is optional.
+     * 
+     * @return void
      */
     function reset()
     {

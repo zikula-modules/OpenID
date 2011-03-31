@@ -1,0 +1,43 @@
+   -----------------------------------------------------------------------------
+   LICENSE
+
+   This notice applies to the package called OpenID for Zikula
+   Copyright (c) 2011 Zikula Foundation.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   -----------------------------------------------------------------------------
+   NOTICE
+   
+   This distribution is licensed under the GPL however, it may contain some
+   files that are licensed under other GPL compatible licenses such as MIT, 
+   "new BSD" and Lesser GPL.  We have included the full text of these licenses
+   in the 'docs/licenses/' folder. Unless otherwise stated, all unmarked files 
+   are licensed under the GPL license of the overall distribution.
+
+   Unless otherwise stated, this work is copyright of the Zikula Foundation. 
+   This distribution may contain portions of copyright works that are copyright
+   of their respective authors and is usually noted in the source files where 
+   applicable.
+   
+   -----------------------------------------------------------------------------
+   CONTACT
+   
+   The OpenID for Zikula project website can be found at http://code.zikula.org/openid
+   The project source code repository can be found at http://github.com/zikula-modules/OpenID
+
+   By email at foundation@zikula.org
+   By post at 400 Ranch Drive, Woodland Park, Colorado CO 80836. USA
+
+   
