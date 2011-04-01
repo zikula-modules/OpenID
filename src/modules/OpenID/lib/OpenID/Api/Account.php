@@ -29,7 +29,7 @@ class OpenID_Api_Account extends Zikula_AbstractApi
         $items[] = array(
             'url'       => ModUtil::url('OpenID', 'user', 'view'),
             'module'    => 'OpenID',
-            'icon'      => 'large/openid-icon.png',
+            'icon'      => 'account.png',
             'title'     => $this->__('OpenID manager'),
         );
 
