@@ -1,5 +1,10 @@
 .oid-fineprint {
     font-size: 0.7em;
+    line-height: 1.2;
+}
+
+.oid-mediumprint {
+    font-size: 0.9em;
     line-height: 1.1;
 }
 
