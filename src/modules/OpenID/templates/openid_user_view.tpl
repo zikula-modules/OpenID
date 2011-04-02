@@ -7,7 +7,7 @@
         <tr>
             <th>{gt text="Service"}</th>
             <th>{gt text="ID"}</th>
-            <th>{gt text="Actions"}</th>
+            <th class="z-center" colspan="{$actions.count|default:'1'}">{gt text="Actions"}</th>
         </tr>
     </thead>
     <tbody>
@@ -46,17 +46,16 @@
                 {$linkopen}{if !empty($openid.display_id)}{$openid.display_id|safehtml}{else}{$openid.claimed_id|safehtml}{/if}{$linkclose}
                 {/strip}
             </td>
-            <td>
-                {strip}{if isset($actions)}
-                {foreach from=$actions[$openid.id] item='action'}
-                {switch expr=$action.name}
-                {case expr='delete'}
-                <a href="{$action.url}">{icon type='delete' size='extrasmall' title=$action.title|safehtml alt=$action.title|safehtml}</a>
-                {/case}
-                {/switch}
-                {/foreach}
-                {/if}{/strip}
+            {assign var='actionlist' value=$actions[$openid.id]}
+            {if isset($actionlist.delete)}
+            <td class="oid-action">
+                {if ($actionlist.delete)}
+                <a href="{$actionlist.delete.url}">{icon type='delete' size='extrasmall' __title='Delete' __alt='Delete' class='tooltips'}</a>
+                {else}
+                {icon type='delete' size='extrasmall' __title='Delete' __alt='Delete' class='tooltips' style='visibility: hidden;'}
+                {/if}
             </td>
+            {/if}
         </tr>
         {/foreach}
     </tbody>
@@ -71,3 +70,7 @@
     <a href="{modurl modname=$module type='user' func='newOpenID'}" title="{$addText}">{icon type='add' size='extrasmall' alt=$addText title=$addText} {$addText}</a>
 </div>
 {include file="openid_common_legalfooter.tpl"}
+
+<script type="text/javascript">
+    Zikula.UI.Tooltips($$('.tooltips'));
+</script>

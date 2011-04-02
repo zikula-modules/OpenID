@@ -220,16 +220,16 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function checkPassword(array $args)
     {
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
 
         if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
         }
 
         $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
 
         if (isset($args['reentrant_url']) && !empty($args['reentrant_url'])) {
@@ -263,9 +263,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     // message.
                     if (Auth_OpenID::isFailure($redirectURL)) {
                         if (System::isDevelopmentMode()) {
-                            return LogUtil::registerError($this->__f("Could not redirect to OpenID server: %1$s", $redirectURL->message));
+                            $this->registerError($this->__f("Could not redirect to OpenID server: %1$s", $redirectURL->message));
+                            return false;
                         } else {
-                            return LogUtil::registerError($this->__("Could not redirect to OpenID server."));
+                            $this->registerError($this->__("Could not redirect to OpenID server."));
+                            return false;
                         }
                     } else {
                         // Send redirect.
@@ -293,9 +295,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 }
             } else {
                 if (function_exists('openssl_open')) {
-                    return LogUtil::registerError($this->__('Unable to contact the OpenID server to start the authorization process.'));
+                    $this->registerError($this->__('Unable to contact the OpenID server to start the authorization process.'));
+                    return false;
                 } else {
-                    return LogUtil::registerError($this->__('Unable to contact the OpenID server to start the authorization process. It is possible this is because outgoing SSL connections are not supported by this server.'));
+                    $this->registerError($this->__('Unable to contact the OpenID server to start the authorization process. It is possible this is because outgoing SSL connections are not supported by this server.'));
+                    return false;
                 }
             }
         } else {
@@ -352,7 +356,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function getUidForAuthenticationInfo(array $args)
     {
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
 
         if (isset($args['authentication_info']['claimed_id'])) {
@@ -362,12 +366,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 if ($userMap) {
                     return $userMap['uid'];
                 } else {
+                    // No user record mapped to that claimed id.
                     return false;
                 }
             } catch (Exception $e) {
+                // TODO - Return false or an exception?
                 return false;
             }
         } else {
+            // No claimed id specified.
             return false;
         }
     }
@@ -396,11 +403,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function authenticateUser(array $args)
     {
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
 
         if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was received.'));
         }
 
         $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(

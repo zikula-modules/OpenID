@@ -39,8 +39,16 @@ class OpenID_Controller_User extends Zikula_AbstractController
         }
 
         $openIds = ModUtil::apiFunc($this->name, 'user', 'getAll');
+        
+        $actions = array('count' => 1);
+        foreach ($openIds as $key => $openId) {
+            $actions[$openId['id']]['delete'] = array(
+                'url'   => ModUtil::url($this->name, 'user', 'removeOpenID', array('id' => $openId['id'])),
+            );
+        }
 
         return $this->view->assign('openids', $openIds ? $openIds : array())
+                ->assign('actions', $actions)
                 ->fetch('openid_user_view.tpl');
     }
 
@@ -78,7 +86,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
     public function newOpenID()
     {
         if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            return LogUtil::registerPermissionError();
+            throw new Zikula_Exception_Forbidden();
         }
         
         $proceedToForm = true;
@@ -180,6 +188,95 @@ class OpenID_Controller_User extends Zikula_AbstractController
                 ->assign('authenticationMethod', $authenticationMethod)
                 ->assign('supportsSsl', $supportsSsl)
                 ->fetch('openid_user_newopenid.tpl');
+        } else {
+            $this->redirect(ModUtil::url($this->name, 'user', 'view'));
+        }
+    }
+    
+    public function removeOpenID()
+    {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
+            throw new Zikula_Exception_Forbidden();
+        }
+        
+        $user = UserUtil::getVar('uid');
+        
+        $proceedToForm = true;
+        
+        if ($this->request->isPost()) {
+            $this->checkCsrfToken();
+            
+            $id = $this->request->getPost()->get('id', null);
+            if (!isset($id) || ((string)((int)$id) != $id)) {
+                throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
+            }
+            
+            $confirmed = $this->request->getPost()->get('confirmed', null);
+            if (!isset($confirmed)) {
+                throw new Zikula_Exception_Fatal($this->__('An invalid confirmation flag was recevied.'));
+            }
+            
+            $proceedToForm = false;
+            
+            if ($confirmed) {
+                try {
+                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                        ->getById($id);
+                    
+                    $uid = UserUtil::getVar('uid');
+                    
+                    if ($userMap['uid'] != $uid) {
+                        throw new Zikula_Exception_Forbidden();
+                    }
+                    
+                    if ($userMap) {
+                        Doctrine_Core::getTable('OpenID_Model_UserMap')
+                            ->removeById($id);
+                    } else {
+                        throw new Zikula_Exception_Fatal($this->__f('An OpenID with the id \'%1$s\' was not found.', array($id)));
+                    }
+                } catch (Doctrine_Exception $e) {
+                    $message = $this->__('An error occurred while retrieving the selected OpenID.');
+                    if (System::isDevelopmentMode()) {
+                        $message .= ' ' . $this->__f('Doctrine exception message: %1$s', array($e->errorMessage()));
+                    }
+                    throw new Zikula_Exception_Fatal($message);
+                }
+            }
+        } elseif ($this->request->isGet()) {
+            $id = $this->request->getGet()->get('id', null);
+            if (!isset($id) || ((string)((int)$id) != $id)) {
+                throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
+            }
+            $confirmed = false;
+            
+            try {
+                $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->getById($id);
+                
+                if (!$userMap) {
+                    throw new Zikula_Exception_Fatal($this->__f('An OpenID with the id \'%1$s\' was not found.', array($id)));
+                }
+                    
+                $uid = UserUtil::getVar('uid');
+
+                if ($userMap['uid'] != $uid) {
+                    throw new Zikula_Exception_Forbidden();
+                }
+            } catch (Doctrine_Exception $e) {
+                $message = $this->__('An error occurred while retrieving the selected OpenID.');
+                if (System::isDevelopmentMode()) {
+                    $message .= ' ' . $this->__f('Doctrine exception message: %1$s', array($e->errorMessage()));
+                }
+                throw new Zikula_Exception_Fatal($message);
+            }
+        } else {
+            throw new Zikula_Exception_Forbidden();
+        }
+        
+        if ($proceedToForm) {
+            return $this->view->assign('openid', $userMap)
+                    ->fetch('openid_user_removeopenid.tpl');
         } else {
             $this->redirect(ModUtil::url($this->name, 'user', 'view'));
         }

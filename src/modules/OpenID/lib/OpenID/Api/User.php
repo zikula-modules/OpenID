@@ -27,10 +27,9 @@ class OpenID_Api_User extends Zikula_AbstractApi
      * -------------------------------------
      * int    $args['id']         The unique database id for the record to retrieve, which must be associated with the
      *                                  user currently logged in; required if 'claimed_id' is not specified;
-     *                                  cannot be used in conjunction with 'claimed_id'.
+     *                                  cannot be used if 'claimed_id' is specified.
      * string $args['claimed_id'] The claimed OpenID to retrieve, which must be associated with the user currently
-     *                                  logged in; required if 'id' is not specified; cannot be
-     *                                  used in conjunction with 'id'.
+     *                                  logged in; required if 'id' is not specified; cannot be used if 'id' is specified.
      * 
      * @param array $args All parameters passed to this function.
      *
@@ -39,33 +38,34 @@ class OpenID_Api_User extends Zikula_AbstractApi
     public function get($args)
     {
         if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            return LogUtil::registerPermissionError();
+            throw new Zikula_Exception_Fatal();
         }
 
         if (isset($args['id']) && isset($args['claimed_id'])) {
             // Cannot supply more than one of id or claimed_id
-            return LogUtil::registerArgsError();
+            throw new Zikula_Exception_Fatal($this->__('Either an id or a claimed id should be specified, not both.'));
         }
 
         $uid = UserUtil::getVar('uid');
 
         try {
             if (isset($args['id'])) {
-                if (!is_numeric($args['id']) || ((int)$args['id'] != $args['id']) || ($args['id'] < 1)) {
-                    return LogUtil::registerArgsError();
+                if (!is_numeric($args['id']) || ((string)((int)$args['id']) != $args['id']) || ($args['id'] < 1)) {
+                    throw new Zikula_Exception_Fatal($this->__f('An invalid user id was received: \'%1$s\'.', array($args['id'])));
                 } else {
                     $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
                         ->getMapById($uid, $args['id']);
                 }
             } elseif (isset($args['claimed_id'])) {
                 if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
-                    return LogUtil::registerArgsError();
+                    throw new Zikula_Exception_Fatal($this->__f('An invalid claimed id was received: \'%1$s\'.', array($args['claimed_id'])));
                 } else {
                     $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
                         ->getMapByClaimedId($uid, $args['claimed_id']);
                 }
             }
         } catch (Exception $e) {
+            // TODO - Probably a Doctrine error. Throw an exception?
             return false;
         }
 
@@ -83,7 +83,7 @@ class OpenID_Api_User extends Zikula_AbstractApi
     public function getAll($args)
     {
         if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            return LogUtil::registerPermissionError();
+            throw new Zikula_Exception_Fatal();
         }
 
         $userMapList = false;
@@ -95,6 +95,7 @@ class OpenID_Api_User extends Zikula_AbstractApi
                 $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
                     ->getAllForUid($uid);
             } catch (Exception $e) {
+                // TODO - Throw an exception?
                 return false;
             }
         }

@@ -1,3 +1,14 @@
+.oid-fineprint {
+    font-size: 0.7em;
+    line-height: 1.1;
+}
+
+table.z-datatable td.oid-action {
+    text-align: center;
+    padding: 5px 0px 5px 0px;
+
+}
+
 #users_loginblock_select_authentication_openid_openid_submit {
     background: transparent url("../images/extrasmall/openid-icon.png") no-repeat scroll center left;
 }
