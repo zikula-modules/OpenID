@@ -90,103 +90,124 @@ class OpenID_Controller_User extends Zikula_AbstractController
         }
         
         $proceedToForm = true;
+        $changeAuthenticatonMethod = false;
 
         if ($this->request->isPost() || ($this->request->isGet() && $this->request->getGet()->has('reentranttoken'))) {
             if ($this->request->isPost()) {
                 $this->checkCsrfToken();
                 
-                $authenticationMethod = $this->request->getPost()->get('authentication_method', array());
+                $selectedAuthenticationMethod = $this->request->getPost()->get('authentication_method', array());
                 $authenticationInfo = array();
-                switch (strtolower($authenticationMethod['method'])) {
-                    case 'openid':
-                        $authenticationInfo['supplied_id'] = $this->request->getPost()->get('openid_identifier', '');
-                        break;
-                    case 'google':
-                        $authenticationInfo['supplied_id'] = 'google';
-                        break;
-                    case 'pip':
-                        $authenticationInfo['supplied_id'] = $this->request->getPost()->get('pip_username', '');
-                        break;
-                    default:
-                        break;
+                
+                if ($this->request->getPost()->has('changeto')) {
+                    $changeAuthenticatonMethod = true;
+                } else {
+                    switch (strtolower($selectedAuthenticationMethod['method'])) {
+                        case 'google':
+                            $authenticationInfo['supplied_id'] = 'google';
+                            break;
+                        case 'yahoo':
+                            $authenticationInfo['supplied_id'] = 'yahoo';
+                            break;
+                        case 'openid':
+                            $authenticationInfo['supplied_id'] = $this->request->getPost()->get('openid_identifier', '');
+                            break;
+                        default:
+                            $authenticationInfo['supplied_id'] = $this->request->getPost()->get('username', '');
+                            break;
+                    }
                 }
             } else {
-                if ($this->request->getGet()->has('reentranttoken')) {
-                    $reentrantTokenReceived = $this->request->getGet()->get('reentranttoken');
-                } else {
-                    $reentrantTokenReceived = '';
-                    $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
-                }
-                
-                $authenticationMethod = $this->request->getSession()->get('authenticationMethod', array(), 'OpenID_Controller_User_newOpenID');
+                $reentrantTokenReceived = $this->request->getGet()->get('reentranttoken');
+                $selectedAuthenticationMethod = $this->request->getSession()->get('authenticationMethod', array(), 'OpenID_Controller_User_newOpenID');
                 $authenticationInfo = $this->request->getSession()->get('authenticationInfo', array(), 'OpenID_Controller_User_newOpenID');
                 $reentrantToken = $this->request->getSession()->get('reentrantToken', false, 'OpenID_Controller_User_newOpenID');
                 $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
             }
             
-            if (isset($authenticationInfo) && !empty($authenticationInfo) && is_array($authenticationInfo)) {
-                // About to call an authmodule checkPassword function, so we must set up the ability to be reentrant.
-                $this->request->getSession()->set('authenticationMethod', $authenticationMethod, 'OpenID_Controller_User_newOpenID');
-                $this->request->getSession()->set('authenticationInfo', $authenticationInfo, 'OpenID_Controller_User_newOpenID');
-                if (!isset($reentrantToken)) {
-                    $reentrantToken = substr(SecurityUtil::generateCsrfToken(), 0, 10);
-                }
-                $this->request->getSession()->set('reentrantToken', $reentrantToken, 'OpenID_Controller_User_newOpenID');
+            if (!$changeAuthenticatonMethod) {
+                if (isset($authenticationInfo) && !empty($authenticationInfo) && is_array($authenticationInfo)) {
+                    // About to call an authmodule checkPassword function, so we must set up the ability to be reentrant.
+                    $this->request->getSession()->set('authenticationMethod', $selectedAuthenticationMethod, 'OpenID_Controller_User_newOpenID');
+                    $this->request->getSession()->set('authenticationInfo', $authenticationInfo, 'OpenID_Controller_User_newOpenID');
+                    if (!isset($reentrantToken)) {
+                        $reentrantToken = substr(SecurityUtil::generateCsrfToken(), 0, 10);
+                    }
+                    $this->request->getSession()->set('reentrantToken', $reentrantToken, 'OpenID_Controller_User_newOpenID');
 
-                $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(
-                    'authentication_info'   => $authenticationInfo,
-                    'authentication_method' => $authenticationMethod,
-                    'set_claimed_id'        => 'OpenID_Controller_User_newOpenID',
-                    'reentrant_url'         => ModUtil::url($this->name, 'user', 'newOpenID', array('reentranttoken' => $reentrantToken), null, null, true, true, false),
-                ));
-                
-                $authenticationInfo['claimed_id'] = $this->request->getSession()->get('claimed_id', false, 'OpenID_Controller_User_newOpenID');
-                $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
+                    $passwordValidates = ModUtil::apiFunc($this->getName(), 'Authentication', 'checkPassword', array(
+                        'authentication_info'   => $authenticationInfo,
+                        'authentication_method' => $selectedAuthenticationMethod,
+                        'set_claimed_id'        => 'OpenID_Controller_User_newOpenID',
+                        'reentrant_url'         => ModUtil::url($this->name, 'user', 'newOpenID', array('reentranttoken' => $reentrantToken), null, null, true, true, false),
+                    ));
 
-                if ($passwordValidates) {
-                    if (!empty($authenticationInfo['claimed_id'])) {
-                        $saved = ModUtil::apiFunc($this->getName(), 'user', 'addOpenID', array(
-                            'authentication_info'   => $authenticationInfo,
-                            'authentication_method' => $authenticationMethod,
-                        ));
+                    $authenticationInfo['claimed_id'] = $this->request->getSession()->get('claimed_id', false, 'OpenID_Controller_User_newOpenID');
+                    $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
 
-                        if (!$saved && !LogUtil::hasErrors()) {
-                            $this->registerError($this->__('There was a problem saving your new OpenID.'));
+                    if ($passwordValidates) {
+                        if (!empty($authenticationInfo['claimed_id'])) {
+                            $saved = ModUtil::apiFunc($this->getName(), 'user', 'addOpenID', array(
+                                'authentication_info'   => $authenticationInfo,
+                                'authentication_method' => $selectedAuthenticationMethod,
+                            ));
+
+                            if (!$saved && !LogUtil::hasErrors()) {
+                                $this->registerError($this->__('There was a problem saving your new OpenID.'));
+                            } else {
+                                $proceedToForm = false;
+                            }
                         } else {
+                            $this->registerError($this->__('There was an internal error processing your request to save a new OpenID.'));
                             $proceedToForm = false;
                         }
                     } else {
-                        $this->registerError($this->__('There was an internal error processing your request to save a new OpenID.'));
-                        $proceedToForm = false;
+                        $this->registerError($this->__('Your OpenID was not authorized by the OpenID provider, or the provider could not be contacted.'));
                     }
                 } else {
-                    $this->registerError($this->__('Your OpenID was not authorized by the OpenID provider, or the provider could not be contacted.'));
+                    $this->registerError($this->__('Your must supply the requested information.'));
                 }
-            } else {
-                $this->registerError($this->__('Your must supply the requested information.'));
             }
-            
         } elseif ($this->request->isGet()) {
             $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
             
-            $authenticationMethod['modname'] = $this->name;
-            $authenticationMethod['method'] = $this->request->getGet()->get('authentication_method', 'OpenID');
+            $selectedAuthenticationMethod['modname'] = $this->name;
+            $selectedAuthenticationMethod['method'] = $this->request->getGet()->get('authentication_method', 'OpenID');
             $authenticationInfo = array();
         } else {
             throw Zikula_Exception_Forbidden();
         }
 
         if ($proceedToForm) {
-            $supportsSsl = function_exists('openssl_open');
+            $supportsSSL = function_exists('openssl_open');
             // Change to OpenID if Google selected and SSL not supported
             // TODO - Do we really want to do this?
-            if (!$supportsSsl && (($authenticationMethod['method'] == 'Google'))) {
-                $authenticationMethod['method'] = 'OpenID';
+            if (!$supportsSSL && (($selectedAuthenticationMethod['method'] == 'Google'))) {
+                $selectedAuthenticationMethod['method'] = 'OpenID';
+            }
+            
+            $getAuthenticationMethodsArgs = array(
+                'filter' => Zikula_Api_AbstractAuthentication::FILTER_ENABLED,
+            );
+            $authenticationMethodList = ModUtil::apiFunc($this->name, 'Authentication', 'getAuthenticationMethods', $getAuthenticationMethodsArgs, 'Zikula_Api_AbstractAuthentication');
+
+            // TODO - The order and availability should be set by configuration
+            $authenticationMethodDisplayOrder = array();
+            foreach ($authenticationMethodList as $authenticationMethod) {
+                $authenticationMethodDisplayOrder[] = array(
+                    'modname'   => $authenticationMethod->modname,
+                    'method'    => $authenticationMethod->method,
+                );
             }
 
-            return $this->view->assign('authenticationInfo', $authenticationInfo)
-                ->assign('authenticationMethod', $authenticationMethod)
-                ->assign('supportsSsl', $supportsSsl)
+            $viewArgs = array(
+                'authentication_info'                   => $authenticationInfo,
+                'selected_authentication_method'        => $selectedAuthenticationMethod,
+                'supports_ssl'                          => $supportsSSL,
+                'authentication_method_display_order'   => $authenticationMethodDisplayOrder,
+            );
+
+            return $this->view->assign($viewArgs)
                 ->fetch('openid_user_newopenid.tpl');
         } else {
             $this->redirect(ModUtil::url($this->name, 'user', 'view'));

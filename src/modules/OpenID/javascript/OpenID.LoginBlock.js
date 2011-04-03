@@ -8,14 +8,23 @@ OpenID.LoginBlock =
 {
     init: function()
     {
-        if ($('users_loginblock_select_authentication_form_openid_openid') != null) {
-            $('users_loginblock_select_authentication_form_openid_openid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_openid'); });
+        if ($('authentication_select_method_form_openid_google') != null) {
+            $('authentication_select_method_form_openid_google').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_google'); });
         }
-        if ($('users_loginblock_select_authentication_form_openid_google') != null) {
-            $('users_loginblock_select_authentication_form_openid_google').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_google'); });
+        if ($('authentication_select_method_form_openid_myid') != null) {
+            $('authentication_select_method_form_openid_myid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_myid'); });
         }
-        if ($('users_loginblock_select_authentication_form_openid_pip') != null) {
-            $('users_loginblock_select_authentication_form_openid_pip').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'users_loginblock_select_authentication_form_openid_pip'); });
+        if ($('authentication_select_method_form_openid_myopenid') != null) {
+            $('authentication_select_method_form_openid_myopenid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_myopenid'); });
+        }
+        if ($('authentication_select_method_form_openid_openid') != null) {
+            $('authentication_select_method_form_openid_openid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_openid'); });
+        }
+        if ($('authentication_select_method_form_openid_pip') != null) {
+            $('authentication_select_method_form_openid_pip').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_pip'); });
+        }
+        if ($('authentication_select_method_form_openid_yahoo') != null) {
+            $('authentication_select_method_form_openid_yahoo').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_yahoo'); });
         }
     }
 

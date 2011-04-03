@@ -35,8 +35,8 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
      *
      * Parameters sent in the $args array:
      * -----------------------------------
-     * string $args['method']      The name of the authentication method for which the fields should be rendered.
-     * string $args['formType']    The type of form (or block, or plugin, etc.) on which the form fields will appear; used in
+     * string $args['method']    The name of the authentication method for which the fields should be rendered.
+     * string $args['form_type'] The type of form (or block, or plugin, etc.) on which the form fields will appear; used in
      *                                  computing the template name.
      *
      * @param array $args All parameters passed to this function.
@@ -67,13 +67,13 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             throw new Zikula_Exception_Fatal($errorMessage);
         }
 
-        if (isset($args['formType']) && is_string($args['formType'])) {
-            $formType = $args['formType'];
+        if (isset($args['form_type']) && is_string($args['form_type'])) {
+            $formType = $args['form_type'];
         } else {
             $errorMessage = $genericErrorMessage;
             if ($showDetailedErrorMessage) {
-                $errorMessage .= ' ' . $this->__f('Error: An invalid formType (\'%1$s\') was received on a call to %2$s.', array(
-                    isset($args['formType']) ? $args['formType'] : 'NULL',
+                $errorMessage .= ' ' . $this->__f('Error: An invalid form type (\'%1$s\') was received on a call to %2$s.', array(
+                    isset($args['form_type']) ? $args['form_type'] : 'NULL',
                     __METHOD__));
             }
             throw new Zikula_Exception_Fatal($errorMessage);
@@ -85,16 +85,16 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             $errorMessage = $genericErrorMessage;
             if ($showDetailedErrorMessage) {
                 $errorMessage .= ' ' . $this->__f('Error: An invalid method (\'%1$s\') was received on a call to %2$s.', array(
-                    isset($args['formType']) ? $args['formType'] : 'NULL',
+                    isset($args['form_type']) ? $args['form_type'] : 'NULL',
                     __METHOD__));
             }
             throw new Zikula_Exception_Fatal($errorMessage);
         }
         // End parameter extraction and error checking
         
-        $templateName = mb_strtolower("openid_auth_loginformfields_{$args['formType']}_{$method}.tpl");
+        $templateName = mb_strtolower("openid_auth_loginformfields_{$args['form_type']}_{$method}.tpl");
         if (!$this->view->template_exists($templateName)) {
-            throw new Zikula_Exception_Fatal($this->__f('A form fields template was not found for the %1$s method using form type \'%2$s\'.', array($method, $args['formType'])));
+            throw new Zikula_Exception_Fatal($this->__f('A form fields template was not found for the %1$s method using form type \'%2$s\'.', array($method, $args['form_type'])));
         }
 
         return $this->view->assign('authentication_method', $method)
@@ -108,8 +108,9 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
      * -----------------------------------
      * string $args['method']      The name of the authentication method for which a selector should be rendered.
      * string $args['is_selected'] True if the selector for this method is the currently selected selector; otherwise false.
-     * string $args['formType']    The type of form (or block, or plugin, etc.) on which the selector will appear; used in
+     * string $args['form_type']   The type of form (or block, or plugin, etc.) on which the selector will appear; used in
      *                                  computing the template name.
+     * string $args['form_action'] The URL to where the form should be posted when submitted.
      * 
      * @param array $args All parameters passed to this function.
      *
@@ -125,11 +126,11 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             throw new Zikula_Exception_Fatal($this->__('The an invalid \'$args\' parameter was received.'));
         }
 
-        if (isset($args['formType']) && is_string($args['formType'])) {
-            $formType = $args['formType'];
+        if (isset($args['form_type']) && is_string($args['form_type'])) {
+            $formType = $args['form_type'];
         } else {
-            throw new Zikula_Exception_Fatal($this->__f('Error: An invalid formType (\'%1$s\') was received.', array(
-                    isset($args['formType']) ? $args['formType'] : 'NULL')));
+            throw new Zikula_Exception_Fatal($this->__f('Error: An invalid form type (\'%1$s\') was received.', array(
+                    isset($args['form_type']) ? $args['form_type'] : 'NULL')));
         }
 
         if (isset($args['method']) && is_string($args['method']) && $this->supportsAuthenticationMethod($args['method'])) {
@@ -140,20 +141,34 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
         }
         // End parameter extraction and error checking
 
-        $authenticationMethod = array(
-            'modname'   => $this->name,
-            'method'    => $method,
-        );
-        $isSelected = isset($args['is_selected']) && $args['is_selected'];
+        if ($this->authenticationMethodIsEnabled($args['method'])) {
+            $templateVars = array(
+                'authentication_method' => array(
+                    'modname'   => $this->name,
+                    'method'    => $args['method'],
+                ),
+                'is_selected'           => isset($args['is_selected']) && $args['is_selected'],
+                'form_type'             => $args['form_type'],
+                'form_action'           => $args['form_action'],
+            );
+            
+            $templateName = mb_strtolower("openid_auth_authenticationmethodselector_{$args['form_type']}_{$args['method']}.tpl");
+            if (!$this->view->template_exists($templateName)) {
+                $templateName = mb_strtolower("openid_auth_authenticationmethodselector_default_{$args['method']}.tpl");
+                if (!$this->view->template_exists($templateName)) {
+                    $templateName = mb_strtolower("openid_auth_authenticationmethodselector_{$args['form_type']}_default.tpl");
+                    if (!$this->view->template_exists($templateName)) {
+                        $templateName = mb_strtolower("openid_auth_authenticationmethodselector_default_default.tpl");
+                        if (!$this->view->template_exists($templateName)) {
+                            throw new Zikula_Exception_Fatal($this->__f('An authentication method selector template was not found for method \'%1$s\' using form type \'%2$s\'.', array($args['method'], $args['form_type'])));
+                        }
+                    }
+                }
+            }
 
-        $templateName = mb_strtolower("openid_auth_authenticationmethodselector_{$formType}_{$method}.tpl");
-        if (!$this->view->template_exists($templateName)) {
-            throw new Zikula_Exception_Fatal($this->__f('An authentication method selector template was not found for method \'%1$s\' using form type \'%2$s\'.', array($method, $args['formType'])));
+            return $this->view->assign($templateVars)
+                    ->fetch($templateName);
         }
-        
-        return $this->view->assign('authentication_method', $authenticationMethod)
-                          ->assign('is_selected', $isSelected)
-                          ->fetch($templateName);
     }
 
 }

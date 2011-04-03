@@ -50,11 +50,35 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
+                'Yahoo',
+                $this->__('Yahoo!'),
+                $this->__('Yahoo!'));
+        $authenticationMethod->enableForAuthentication();
+        $this->authenticationMethods['Yahoo'] = $authenticationMethod;
+
+        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+                $this->name,
+                'myOpenID',
+                $this->__('myOpenID'),
+                $this->__('myOpenID'));
+        $authenticationMethod->enableForAuthentication();
+        $this->authenticationMethods['myOpenID'] = $authenticationMethod;
+
+        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+                $this->name,
                 'OpenID',
                 $this->__('OpenID'),
                 $this->__('OpenID'));
         $authenticationMethod->enableForAuthentication();
         $this->authenticationMethods['OpenID'] = $authenticationMethod;
+
+        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+                $this->name,
+                'myID',
+                $this->__('myID.net'),
+                $this->__('myID.net'));
+        $authenticationMethod->enableForAuthentication();
+        $this->authenticationMethods['myID'] = $authenticationMethod;
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
@@ -169,7 +193,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $authenticationMethods = array();
                 foreach ($this->authenticationMethods as $index => $authenticationMethod) {
                     if ($authenticationMethod->isEnabledForAuthentication()) {
-                        $authenticationMethods[$authenticationMethod->getMethod()] -> $authenticationMethod;
+                        $authenticationMethods[$authenticationMethod->getMethod()] = $authenticationMethod;
                     }
                 }
                 break;

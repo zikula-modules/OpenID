@@ -17,16 +17,22 @@
                 {strip}
                 {switch expr=$openid.authentication_method|lower}
                 {case expr='google'}
-                <a href="http://www.google.com/accounts/">{gt text='Google Account'}</a>
+                <a href="http://www.google.com/accounts/">{img modname='OpenID' src='extrasmall/google-favicon.png' __alt='Google Account' __title='Google Account'}&nbsp;{gt text='Google Account'}</a>
                 {/case}
-                {case expr='googleapp'}
-                <a href="http://www.google.com/a/">{gt text='Google Apps Hosted Account'}</a>
+                {case expr='myid'}
+                <a href="http://www.myid.net/">{img modname='OpenID' src='extrasmall/myid-net-icon.png' __alt='myID.net Account' __title='myID.net Account'}&nbsp;{gt text='myID.net Account'}</a>
+                {/case}
+                {case expr='myopenid'}
+                <a href="http://www.myopenid.com/">{img modname='OpenID' src='extrasmall/myopenid-icon.png' __alt='myOpenID Account' __title='myOpenID Account'}&nbsp;{gt text='myOpenID Account'}</a>
                 {/case}
                 {case expr='pip'}
-                <a href="http://pip.verisignlabs.com/">{gt text='VeriSign Personal Identity Portal'}</a>
+                <a href="http://pip.verisignlabs.com/">{img modname='OpenID' src='extrasmall/symantec-checkmark-only-logo.png' __alt='Symantec Personal Identity Portal' __title='Symantec Personal Identity Portal'}&nbsp;{gt text='Symantec Personal Identity Portal'}</a>
+                {/case}
+                {case expr='yahoo'}
+                <a href="http://me.yahoo.com/">{img modname='OpenID' src='extrasmall/yahoo-icon.png' __alt='Yahoo! Account' __title='Yahoo! Account'}&nbsp;{gt text='Yahoo! Account'}</a>
                 {/case}
                 {case}
-                {img modname='OpenID' src='extrasmall/openid-logo.png' __alt='OpenID' __title='OpenID'}
+                {img modname='OpenID' src='extrasmall/openid-icon.png' __alt='OpenID' __title='OpenID'}&nbsp;{gt text='OpenID'}
                 {/case}
                 {/switch}
                 {/strip}

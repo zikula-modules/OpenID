@@ -11,7 +11,7 @@
         <legend>{gt text='Do you really want to remove this OpenID from your account?'}</legend>
         <div class="z-formrow">
             <label>{gt text='OpenID:'}</label>
-            <span>{$openid.display_id}</span>
+            <span>{$openid.claimed_id}</span>
         </div>
     </fieldset>
     {notifydisplayhooks eventname='openid.hook.openid.ui.delete' area='modulehook_area.openid.user' subject=$openid id=$openid.id}

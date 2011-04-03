@@ -31,14 +31,23 @@ class OpenID_Helper_Builder
     {
         try {
             switch (strtolower($authenticationMethod)) {
-                case 'openid':
-                    return new OpenID_Helper_OpenID($authenticationInfo);
-                    break;
                 case 'google':
                     return new OpenID_Helper_Google($authenticationInfo);
                     break;
+                case 'myid':
+                    return new OpenID_Helper_MyID($authenticationInfo);
+                    break;
+                case 'myopenid':
+                    return new OpenID_Helper_MyOpenID($authenticationInfo);
+                    break;
+                case 'openid':
+                    return new OpenID_Helper_OpenID($authenticationInfo);
+                    break;
                 case 'pip':
                     return new OpenID_Helper_VeriSignPIP($authenticationInfo);
+                    break;
+                case 'yahoo':
+                    return new OpenID_Helper_Yahoo($authenticationInfo);
                     break;
                 default:
                     return false;
