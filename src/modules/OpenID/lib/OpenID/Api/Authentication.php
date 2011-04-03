@@ -34,17 +34,23 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     protected function  postInitialize() {
         parent::postInitialize();
+        
+        $sslEnabled = function_exists('openssl_open');
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
                 'Google',
                 $this->__('Google Account'),
-                $this->__('Google Account'));
+                $this->__('Google Account'),
+                true
+        );
         // Google requires an SSL connection.
-        if (function_exists('openssl_open')) {
+        if ($sslEnabled) {
             $authenticationMethod->enableForAuthentication();
+            $authenticationMethod->enableForRegistration();
         } else {
             $authenticationMethod->disableForAuthentication();
+            $authenticationMethod->disableForRegistration();
         }
         $this->authenticationMethods['Google'] = $authenticationMethod;
 
@@ -52,40 +58,60 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $this->name,
                 'Yahoo',
                 $this->__('Yahoo!'),
-                $this->__('Yahoo!'));
-        $authenticationMethod->enableForAuthentication();
+                $this->__('Yahoo!'),
+                true
+        );
+        if ($sslEnabled) {
+            $authenticationMethod->enableForAuthentication();
+            $authenticationMethod->enableForRegistration();
+        } else {
+            $authenticationMethod->disableForAuthentication();
+            $authenticationMethod->disableForRegistration();
+        }
         $this->authenticationMethods['Yahoo'] = $authenticationMethod;
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
                 'myOpenID',
                 $this->__('myOpenID'),
-                $this->__('myOpenID'));
+                $this->__('myOpenID'),
+                true
+        );
         $authenticationMethod->enableForAuthentication();
+        $authenticationMethod->enableForRegistration();
         $this->authenticationMethods['myOpenID'] = $authenticationMethod;
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
                 'OpenID',
                 $this->__('OpenID'),
-                $this->__('OpenID'));
+                $this->__('OpenID'),
+                true
+        );
         $authenticationMethod->enableForAuthentication();
+        $authenticationMethod->enableForRegistration();
         $this->authenticationMethods['OpenID'] = $authenticationMethod;
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
                 'myID',
                 $this->__('myID.net'),
-                $this->__('myID.net'));
+                $this->__('myID.net'),
+                true
+        );
         $authenticationMethod->enableForAuthentication();
+        $authenticationMethod->enableForRegistration();
         $this->authenticationMethods['myID'] = $authenticationMethod;
 
         $authenticationMethod = new Users_Helper_AuthenticationMethod(
                 $this->name,
                 'PIP',
                 $this->__('Symantec PIP'),
-                $this->__('Symantec (VeriSign) Personal Identity Portal'));
+                $this->__('Symantec (VeriSign) Personal Identity Portal'),
+                true
+        );
         $authenticationMethod->enableForAuthentication();
+        $authenticationMethod->enableForRegistration();
         $this->authenticationMethods['PIP'] = $authenticationMethod;
     }
 
@@ -174,7 +200,9 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         if (isset($args) && isset($args['filter'])) {
             if (is_numeric($args['filter']) && ((int)$args['filter'] == $args['filter'])) {
                 switch($args['filter']) {
+                    case Zikula_Api_AbstractAuthentication::FILTER_NONE:
                     case Zikula_Api_AbstractAuthentication::FILTER_ENABLED:
+                    case Zikula_Api_AbstractAuthentication::FILTER_REGISTRATION_ENABLED:
                         $filter = $args['filter'];
                         break;
                     default:
@@ -197,6 +225,14 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     }
                 }
                 break;
+            case Zikula_Api_AbstractAuthentication::FILTER_REGISTRATION_ENABLED:
+                $authenticationMethods = array();
+                foreach ($this->authenticationMethods as $index => $authenticationMethod) {
+                    if ($authenticationMethod->isEnabledForRegistration()) {
+                        $authenticationMethods[$authenticationMethod->getMethod()] = $authenticationMethod;
+                    }
+                }
+                break;
             default:
                 $authenticationMethods = $this->authenticationMethods;
                 break;
@@ -206,7 +242,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     }
 
     /**
-     * Authenticates authentication info with the authenticating source, returning a simple boolean result.
+     * Authenticates authentication info with the authenticating source.
      *
      * ATTENTION: Any function that causes this function to be called MUST specify a return URL, and therefore
      * must be reentrant. In other words, in order to call this function, there must exist a controller function
@@ -225,40 +261,24 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * authenticating authority to authenticate the authentication info provided. No "login" should take place as a result of
      * this authentication.
      *
-     * This function may be called to initially authenticate a user during the registration process, or may be called
-     * for a user already logged in to re-authenticate his password for a security-sensitive operation. This function
-     * should merely authenticate the user, and not perform any additional login-related processes.
+     * @param array   $authenticationMethod An array identifying the selected authentication method by 'modname' and 'method'.
+     * @param array   $authenticationInfo   An array containing the authentication information supplied by the user; for this module, a 'supplied_id'.
+     * @param string  $reentrantURL         The URL to which an external OpenID Provider should return in order to reenter the authentication proces
+     *                                          following a user's attempt to authenticate on the external server.
+     * @param boolean $forRegistration      If true, then a simple registration request extension will be added to the OpenID authentication request, 
+     *                                          asking for the user's nickname and email address.
      *
-     * This function differs from authenticateUser() in that no attempt is made to match the authentication info with and map to a
-     * Zikula user account. It does not return a Zikula user id (uid).
-     *
-     * This function differs from login()  in that no attempt is made to match the authentication info with and map to a
-     * Zikula user account. It does not return a Zikula user id (uid). In addition this function makes no attempt to
-     * perform any login-related processes on the authenticating system.
-     *
-     * @param array $args All arguments passed to this function.
-     *                      array   authentication_info    The authentication info needed for this authmodule, including any user-entered password.
-     *
-     * @return boolean True if the authentication info authenticates with the source; otherwise false on authentication failure or error.
+     * @return array|boolean If the authentication info authenticates with the source, then an array containing the 'claimed_id', and any optional
+     *                              simple registration fields; otherwise false on authentication failure or error.
      */
-    public function checkPassword(array $args)
+    protected function internalCheckPassword(array $authenticationMethod, array $authenticationInfo, $reentrantURL = null, $forRegistration = false)
     {
-        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
-            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
-        }
-
-        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
-            throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
-        }
-
-        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
 
-        if (isset($args['reentrant_url']) && !empty($args['reentrant_url'])) {
-            $reentrantURL = $args['reentrant_url'];
-        } else {
+        if (!isset($reentrantURL) || empty($reentrantURL)) {
             // TODO - Maybe we should error out, because there is no guarantee that the current URL is reentrant.
             $reentrantURL = System::getCurrentUrl();
         }
@@ -278,6 +298,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             $openidAuthRequest = @$openidConsumer->begin($openidHelper->getSuppliedId());
 
             if ($openidAuthRequest instanceof Auth_OpenID_AuthRequest) {
+                if ($forRegistration) {
+                    $simpleRegistrationRequest = Auth_OpenID_SRegRequest::build(array('nickname', 'email'));
+                    $openidAuthRequest->addExtension($simpleRegistrationRequest);
+                }
+                
                 // For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
                 // form to send a POST request to the server.
                 if ($openidAuthRequest->shouldSendRedirect()) {
@@ -339,26 +364,183 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             // Check the response status.
             if ($response->status == Auth_OpenID_CANCEL) {
                 // This means the authentication was cancelled.
-                return LogUtil::registerError($this->__('OpenID authorization was canceled on the OpenID Server.'));
+                $this->registerError($this->__('OpenID authorization was canceled on the OpenID Server.'));
+                return false;
             } else if ($response->status == Auth_OpenID_FAILURE) {
                 // Authentication failed; display the error message.
-                return LogUtil::registerError($this->__f('OpenID authorization failed. The message from the OpenID Server was: %1$s', array($response->message)));
+                $this->registerError($this->__f('OpenID authorization failed. The message from the OpenID Server was: %1$s', array($response->message)));
+                return false;
             } else if ($response->status == Auth_OpenID_SUCCESS) {
                 // This means the authentication succeeded; extract the
                 // identity URL and Simple Registration data (if it was
                 // returned).
-                $claimedID = $response->getDisplayIdentifier();
-
-                // Set a session variable, if necessary, with the claimed id.
-                if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
-                    $this->request->getSession()->set('claimed_id', $claimedID, $args['set_claimed_id']);
+                $returnResult = array(
+                    'claimed_id' => $response->getDisplayIdentifier(),
+                );
+                
+                if ($forRegistration) {
+                    $simpleRegistrationResponse = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
+                    if ($simpleRegistrationResponse) {
+                        $registrationData = $simpleRegistrationResponse->contents();
+                        foreach ($registrationData as $fieldName => $value) {
+                            $returnResult[$fieldName] = $value;
+                        }
+                    }
                 }
 
-                return true;
+                return $returnResult;
             } else {
-                return LogUtil::registerError('An unknown response was received from the OpenID Server.');
+                $this->registerError('An unknown response was received from the OpenID Server.');
+                return false;
             }
         }
+    }
+
+    /**
+     * Authenticates authentication info with the authenticating source, returning a simple boolean result.
+     *
+     * ATTENTION: Any function that causes this function to be called MUST specify a return URL, and therefore
+     * must be reentrant. In other words, in order to call this function, there must exist a controller function
+     * (specified by the return URL) that the OpenID server can return to, and that function must restore the
+     * pertinent state for the user as if he never left this site! Session variables should be used to store all
+     * pertinent variables, and those must be re-read into the user's state when the return URL is called back
+     * by the OpenID server.
+     *
+     * Note that, despite this function's name, there is no requirement that a password be part of the authentication info.
+     * Merely that enough information be provided in the authentication info array to unequivocally authenticate the user. For
+     * most authenticating authorities this will be the equivalent of a user name and password, but--again--there
+     * is no restriction here. This is not, however, a "user exists in the system" function. It is expected that
+     * the authenticating authority validate what ever is used as a password or the equivalent thereof.
+     *
+     * This function makes no attempt to match the given authentication info with a Zikula user id (uid). It simply asks the
+     * authenticating authority to authenticate the authentication info provided. No "login" should take place as a result of
+     * this authentication.
+     *
+     * This function may be called to initially authenticate a user during the registration process, or may be called
+     * for a user already logged in to re-authenticate his password for a security-sensitive operation. This function
+     * should merely authenticate the user, and not perform any additional login-related processes.
+     *
+     * This function differs from authenticateUser() in that no attempt is made to match the authentication info with and map to a
+     * Zikula user account. It does not return a Zikula user id (uid).
+     *
+     * This function differs from login()  in that no attempt is made to match the authentication info with and map to a
+     * Zikula user account. It does not return a Zikula user id (uid). In addition this function makes no attempt to
+     * perform any login-related processes on the authenticating system.
+     *
+     * @param array $args All arguments passed to this function.
+     *                      array   authentication_info    The authentication info needed for this authmodule, including any user-entered password.
+     *
+     * @return boolean True if the authentication info authenticates with the source; otherwise false on authentication failure or error.
+     */
+    public function checkPassword(array $args)
+    {
+        $passwordAuthenticates = false;
+        
+        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
+        }
+
+        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
+        }
+
+        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        if (!isset($openidHelper) || ($openidHelper === false)) {
+            throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
+        }
+
+        if (isset($args['reentrant_url']) && !empty($args['reentrant_url'])) {
+            $reentrantURL = $args['reentrant_url'];
+        } else {
+            // TODO - Maybe we should error out, because there is no guarantee that the current URL is reentrant.
+            $reentrantURL = System::getCurrentUrl();
+        }
+        
+        $checkPasswordResult = $this->internalCheckPassword($args['authentication_method'], $args['authentication_info'], $reentrantURL, false);
+        
+        if ($checkPasswordResult) {
+            $passwordAuthenticates = true;
+            
+            // Set a session variable, if necessary, with the claimed id.
+            if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
+                $this->request->getSession()->set('claimed_id', $checkPasswordResult['claimed_id'], $args['set_claimed_id']);
+            }
+       }
+            
+        return $passwordAuthenticates;
+    }
+
+    /**
+     * Authenticates authentication info with the authenticating source, returning simple registration information.
+     *
+     * ATTENTION: Any function that causes this function to be called MUST specify a return URL, and therefore
+     * must be reentrant. In other words, in order to call this function, there must exist a controller function
+     * (specified by the return URL) that the OpenID server can return to, and that function must restore the
+     * pertinent state for the user as if he never left this site! Session variables should be used to store all
+     * pertinent variables, and those must be re-read into the user's state when the return URL is called back
+     * by the OpenID server.
+     *
+     * Note that, despite this function's name, there is no requirement that a password be part of the authentication info.
+     * Merely that enough information be provided in the authentication info array to unequivocally authenticate the user. For
+     * most authenticating authorities this will be the equivalent of a user name and password, but--again--there
+     * is no restriction here. This is not, however, a "user exists in the system" function. It is expected that
+     * the authenticating authority validate what ever is used as a password or the equivalent thereof.
+     *
+     * This function makes no attempt to match the given authentication info with a Zikula user id (uid). It simply asks the
+     * authenticating authority to authenticate the authentication info provided. No "login" should take place as a result of
+     * this authentication.
+     *
+     * This function may be called to initially authenticate a user during the registration process, or may be called
+     * for a user already logged in to re-authenticate his password for a security-sensitive operation. This function
+     * should merely authenticate the user, and not perform any additional login-related processes.
+     *
+     * This function differs from authenticateUser() in that no attempt is made to match the authentication info with and map to a
+     * Zikula user account. It does not return a Zikula user id (uid).
+     *
+     * This function differs from login()  in that no attempt is made to match the authentication info with and map to a
+     * Zikula user account. It does not return a Zikula user id (uid). In addition this function makes no attempt to
+     * perform any login-related processes on the authenticating system.
+     *
+     * @param array $args All arguments passed to this function.
+     *                      array   authentication_info    The authentication info needed for this authmodule, including any user-entered password.
+     *
+     * @return array|boolean If the authentication info authenticates with the source, then an array is returned containing the user's 'claimed_id',
+     *                              plus requested simple registration information from the OpenID server; otherwise false on authentication failure or error.
+     */
+    public function checkPasswordForRegistration(array $args)
+    {
+        $checkPasswordResult = false;
+        
+        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
+        }
+
+        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
+        }
+
+        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        if (!isset($openidHelper) || ($openidHelper === false)) {
+            throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
+        }
+
+        if (isset($args['reentrant_url']) && !empty($args['reentrant_url'])) {
+            $reentrantURL = $args['reentrant_url'];
+        } else {
+            // TODO - Maybe we should error out, because there is no guarantee that the current URL is reentrant.
+            $reentrantURL = System::getCurrentUrl();
+        }
+        
+        $checkPasswordResult = $this->internalCheckPassword($args['authentication_method'], $args['authentication_info'], $reentrantURL, true);
+        
+        if ($checkPasswordResult) {
+            // Set a session variable, if necessary, with the claimed id.
+            if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
+                $this->request->getSession()->set('claimed_id', $checkPasswordResult['claimed_id'], $args['set_claimed_id']);
+            }
+       }
+            
+        return $checkPasswordResult;
     }
 
     /**
