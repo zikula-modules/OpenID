@@ -176,7 +176,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
             $selectedAuthenticationMethod['method'] = $this->request->getGet()->get('authentication_method', 'OpenID');
             $authenticationInfo = array();
         } else {
-            throw Zikula_Exception_Forbidden();
+            throw new Zikula_Exception_Forbidden();
         }
 
         if ($proceedToForm) {
