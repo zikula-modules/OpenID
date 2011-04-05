@@ -72,6 +72,11 @@ class OpenID_Model_UserMapTable extends Doctrine_Table
             ->delete()
             ->from('OpenID_Model_UserMap um')
             ->where('um.id = ?'));
+
+        $this->addNamedQuery('remove.by.uid', Doctrine_Query::create()
+            ->delete()
+            ->from('OpenID_Model_UserMap um')
+            ->where('um.uid = ?'));
     }
 
     public function getById($id, $hydrationMode = Doctrine_Core::HYDRATE_ARRAY)
@@ -147,5 +152,10 @@ class OpenID_Model_UserMapTable extends Doctrine_Table
     public function removeById($id)
     {
         $this->execute('remove.by.id', array($id), Doctrine::HYDRATE_NONE);
+    }
+
+    public function removeByUserId($uid)
+    {
+        $this->execute('remove.by.uid', array($uid), Doctrine::HYDRATE_NONE);
     }
 }

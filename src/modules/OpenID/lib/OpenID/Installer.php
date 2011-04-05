@@ -33,6 +33,10 @@ class OpenID_Installer extends Zikula_AbstractInstaller
             }
             $this->registerError($message);
         }
+        
+        // Persistent event handler registration
+        EventUtil::registerPersistentModuleHandler('OpenID', 'user.account.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
+        EventUtil::registerPersistentModuleHandler('OpenID', 'user.registration.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
 
         // Initialisation successful
         return true;
@@ -89,6 +93,10 @@ class OpenID_Installer extends Zikula_AbstractInstaller
         }
 
         $this->delVars();
+        
+        // Persistent event handler unregistration
+        EventUtil::unregisterPersistentModuleHandler('OpenID', 'user.account.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
+        EventUtil::unregisterPersistentModuleHandler('OpenID', 'user.registration.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
 
         // Deletion successful
         return true;
