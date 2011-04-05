@@ -104,58 +104,70 @@ class OpenID_Api_User extends Zikula_AbstractApi
     }
 
     /**
-     * Internal function to count the instances of a particular claimed id across all users.
-     *
-     * This is an internal, protected function because all user-level functions should operate only
-     * on the user's own data. This function operates across all users. A user-level function should
-     * only use this in order to confirm that the claimed id has not been claimed by another account.
-     *
+     * Either counts all claimed open IDs, or counts the occurrences of the specified claimed_id.
+     * 
      * Parameters passed in the $args array:
      * -------------------------------------
-     * string $args['claimed_id'] The claimed OpenID to count across all user accounts.
-     * 
-     * @param array $args All parameters sent to this function.
+     * string  $args['claimed_id'] Counts only those records whose claimed id is equal to this; optional, if not specifed then all claimed IDs are counted.
      *
-     * @return boolean|integer The count across all users accounts; false on error.
+     * @param array $args All parameters for this function.
+     *
+     * @return boolean|integer The count; false on error.
      */
-    protected function countAllInternal($args)
+    public function countAll($args)
     {
-        if (!isset($args['claimed_id']) || empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
-            return LogUtil::registerArgsError();
+        if (isset($args['claimed_id'])) {
+            if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
+                throw new Zikula_Exception_Fatal($this->__('An invalid claimed ID was specified.'));
+            }
         }
-
+        
         try {
-            return Doctrine_Core::getTable('OpenID_Model_UserMap')
-                ->countClaimedId($args['claimed_id']);
+            if (isset($args['claimed_id'])) {
+                return Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->countClaimedId($args['claimed_id']);
+            } else {
+                return Doctrine_Core::getTable('OpenID_Model_UserMap')
+                    ->countAll();
+            }
         } catch (Exception $e) {
-            return false;
+            if (System::isDevelopmentMode()) {
+                return LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
+            } else {
+                return false;
+            }
         }
     }
 
     /**
-     * Counts all claimed open IDs either for the current user, or for a specified claimed_id for the current user.
+     * Either counts all claimed open IDs for the specifed user, or counts the specified claimed_id for the specifed user.
      * 
      * Parameters passed in the $args array:
      * -------------------------------------
-     * string $args['claimed_id'] Counts only those records for the current user whose claimed id is equal to this; optional.
+     * numeric $args['uid']        The user id of the user for whom the count is to be performed; optional, if not specified then the current user is assumed.
+     * string  $args['claimed_id'] Counts only those records for the specified user whose claimed id is equal to this; optional, if not specifed then all 
+     *                                  claimed IDs for the specified user are counted.
      *
      * @param array $args All parameters for this function.
      *
      * @return boolean|integer The count for the current user; false on error.
      */
-    public function countAll($args)
+    public function countAllForUser($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            return LogUtil::registerPermissionError();
-        }
-
         if (isset($args['claimed_id'])) {
             if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
-                return LogUtil::registerArgsError();
+                throw new Zikula_Exception_Fatal($this->__('An invalid claimed ID was specified.'));
             }
         }
-
-        $uid = UserUtil::getVar('uid');
+        
+        if (isset($args['uid'])) {
+            if (empty($args['uid']) || !is_numeric($args['uid']) || ((string)((int)$args['uid']) != $args['uid'])) {
+                throw new Zikula_Exception_Fatal($this->__('An invalid user ID was received.'));
+            }
+            $uid = $args['uid'];
+        } else {
+            $uid = UserUtil::getVar('uid');
+        }
 
         try {
             if (isset($args['claimed_id'])) {
@@ -172,89 +184,5 @@ class OpenID_Api_User extends Zikula_AbstractApi
                 return false;
             }
         }
-    }
-
-    /**
-     * Adds a new claimed OpenID for the current user.
-     * 
-     * Parameters passed in the $args array:
-     * -------------------------------------
-     * string $args['claimed_id'] A normalized and validated claimed OpenID
-     *
-     * @param array $args All arguments passed to the function.
-     *
-     * @return boolean True if the OpenID was added, otherwise false.
-     */
-    public function addOpenID($args)
-    {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            return LogUtil::registerPermissionError();
-        }
-
-        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
-            return LogUtil::registerArgsError();
-        }
-        
-        $authenticationInfo = $args['authentication_info'];
-
-        if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])) {
-            return LogUtil::registerArgsError();
-        }
-        
-        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
-            return LogUtil::registerArgsError();
-        }
-        
-        $authenticationMethod = $args['authentication_method'];
-
-        if (!isset($authenticationMethod['modname']) || empty($authenticationMethod['modname']) 
-                || !isset($authenticationMethod['method']) || empty($authenticationMethod['method'])
-                ) {
-            return LogUtil::registerArgsError();
-        }
-        
-        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
-        if ($openidHelper == false) {
-            return LogUtil::registerArgsError();
-        }
-
-        $claimedID = $authenticationInfo['claimed_id'];
-        $uid = UserUtil::getVar('uid');
-
-        $thisUserCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll', array(
-            'claimed_id'    => $claimedID,
-        ));
-        if ($thisUserCount === false) {
-            LogUtil::log($this->__f('Internal error: Unable to check for duplicate claimed id for %1$s = %2$s', array('uid', $uid)));
-            return false;
-        }
-
-        $otherUserCount = $this->countAllInternal(array('claimed_id' => $claimedID));
-        if ($otherUserCount === false) {
-            LogUtil::log($this->__('Internal error: Unable to check for duplicate claimed id across all users'));
-            return false;
-        }
-
-        if ($thisUserCount > 0) {
-            return LogUtil::registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with your account.', $claimedID));
-        } elseif ($otherUserCount > 0) {
-            return LogUtil::registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with another account. If this is your OpenID, then please contact the site administrator.', $claimedID));
-        } else {
-            try {
-                $userMap = new OpenID_Model_UserMap();
-                $userMap->fromArray(array(
-                    'uid'                   => $uid,
-                    'authentication_method' => $authenticationMethod['method'],
-                    'claimed_id'            => $claimedID,
-                    'display_id'            => $openidHelper->getDisplayName($claimedID),
-                ));
-                $userMap->save();
-                return true;
-            } catch (Exception $e) {
-                return false;
-            }
-        }
-
-        return false;
     }
 }

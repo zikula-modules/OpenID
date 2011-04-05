@@ -12,6 +12,9 @@
  * information regarding copyright and licensing.
  */
 
+// Hack for JanRain's inability to load via ZLoader, and for error messages
+@require_once 'Auth/OpenID/SReg.php';
+
 /**
  * The user authentication services for the log-in process through the OpenID protocol.
  */
@@ -239,6 +242,81 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         }
 
         return $authenticationMethods;
+    }
+    
+    public function register(array $args)
+    {
+        if (!isset($args['uid']) || empty($args['uid']) || !is_numeric($args['uid']) || ((string)((int)$args['uid']) != $args['uid'])) {
+            throw new Zikula_Exception_Fatal($this->__('Invalid user id has been received.'));
+        }
+        
+        $uid = $args['uid'];
+        
+        if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
+            throw new Zikula_Exception_Fatal($this->__('Invalid authentication information has been received.'));
+        }
+        
+        $authenticationInfo = $args['authentication_info'];
+        if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])) {
+            throw new Zikula_Exception_Fatal($this->__('Invalid authentication information has been received. A claimed ID was not specified.'));
+        }
+        
+        if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
+            throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received.'));
+        }
+        
+        $authenticationMethod = $args['authentication_method'];
+        if (!isset($authenticationMethod['modname']) || empty($authenticationMethod['modname']) 
+                || !isset($authenticationMethod['method']) || empty($authenticationMethod['method'])
+                ) {
+            throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received. Either an authentication module name or a method name was missing.'));
+        }
+        
+        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
+        if ($openidHelper == false) {
+            throw new Zikula_Exception_Fatal($this->__('The authentication method \'%1$s\' does not appear to be supported by the authentication module \'%2$s\'.', array($authenticationMethod['method'], $authenticationMethod['modname'])));
+        }
+
+        $claimedID = $authenticationInfo['claimed_id'];
+
+        $thisUserCount = ModUtil::apiFunc($this->getName(), 'user', 'countAllForUser', array(
+            'claimed_id'    => $claimedID,
+            'uid'           => $uid,
+        ));
+        if ($thisUserCount === false) {
+            throw new Zikula_Exception_Fatal($this->__f('Internal error: Unable to check for duplicate claimed id for %1$s = %2$s', array('uid', $uid)));
+        }
+
+        $otherUserCount = ModUtil::apiFunc($this->getName(), 'user', 'countAll', array(
+            'claimed_id'    => $claimedID,
+        ));
+        if ($otherUserCount === false) {
+            throw new Zikula_Exception_Fatal($this->__('Internal error: Unable to check for duplicate claimed id across all users'));
+        }
+
+        if ($thisUserCount > 0) {
+            $this->registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with the specified user account.', $claimedID));
+            return false;
+        } elseif ($otherUserCount > 0) {
+            $this->registerError($this->__f('The claimed OpenID \'%1$s\' is already associated with another account. If this is your OpenID, then please contact the site administrator.', $claimedID));
+            return false;
+        } else {
+            try {
+                $userMap = new OpenID_Model_UserMap();
+                $userMap->fromArray(array(
+                    'uid'                   => $uid,
+                    'authentication_method' => $authenticationMethod['method'],
+                    'claimed_id'            => $claimedID,
+                    'display_id'            => $openidHelper->getDisplayName($claimedID),
+                ));
+                $userMap->save();
+                return true;
+            } catch (Exception $e) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -534,10 +612,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         $checkPasswordResult = $this->internalCheckPassword($args['authentication_method'], $args['authentication_info'], $reentrantURL, true);
         
         if ($checkPasswordResult) {
-            // Set a session variable, if necessary, with the claimed id.
-            if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
-                $this->request->getSession()->set('claimed_id', $checkPasswordResult['claimed_id'], $args['set_claimed_id']);
-            }
+            $authenticationInfo = $args['authentication_info'];
+            $authenticationInfo['claimed_id'] = $checkPasswordResult['claimed_id'];
+            unset($checkPasswordResult['claimed_id']);
+            
+            $checkPasswordResult = array(
+                'authentication_method' => $args['authentication_method'],
+                'authentication_info'   => $authenticationInfo,
+                'registration_info'     => $checkPasswordResult,
+            );
        }
             
         return $checkPasswordResult;

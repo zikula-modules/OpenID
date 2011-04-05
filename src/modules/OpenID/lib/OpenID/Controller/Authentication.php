@@ -67,9 +67,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             throw new Zikula_Exception_Fatal($errorMessage);
         }
 
-        if (isset($args['form_type']) && is_string($args['form_type'])) {
-            $formType = $args['form_type'];
-        } else {
+        if (!isset($args['form_type']) || !is_string($args['form_type'])) {
             $errorMessage = $genericErrorMessage;
             if ($showDetailedErrorMessage) {
                 $errorMessage .= ' ' . $this->__f('Error: An invalid form type (\'%1$s\') was received on a call to %2$s.', array(
@@ -79,9 +77,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             throw new Zikula_Exception_Fatal($errorMessage);
         }
 
-        if (isset($args['method']) && is_string($args['method']) && $this->supportsAuthenticationMethod($args['method'])) {
-            $method = $args['method'];
-        } else {
+        if (!isset($args['method']) || !is_string($args['method']) || !$this->supportsAuthenticationMethod($args['method'])) {
             $errorMessage = $genericErrorMessage;
             if ($showDetailedErrorMessage) {
                 $errorMessage .= ' ' . $this->__f('Error: An invalid method (\'%1$s\') was received on a call to %2$s.', array(
@@ -92,13 +88,24 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
         }
         // End parameter extraction and error checking
         
-        $templateName = mb_strtolower("openid_auth_loginformfields_{$args['form_type']}_{$method}.tpl");
-        if (!$this->view->template_exists($templateName)) {
-            throw new Zikula_Exception_Fatal($this->__f('A form fields template was not found for the %1$s method using form type \'%2$s\'.', array($method, $args['form_type'])));
-        }
+        if ($this->authenticationMethodIsEnabled($args['method'])) {
+            $templateName = mb_strtolower("openid_auth_loginformfields_{$args['form_type']}_{$args['method']}.tpl");
+            if (!$this->view->template_exists($templateName)) {
+                $templateName = mb_strtolower("openid_auth_loginformfields_default_{$args['method']}.tpl");
+                if (!$this->view->template_exists($templateName)) {
+                    $templateName = mb_strtolower("openid_auth_loginformfields_{$args['form_type']}_default.tpl");
+                    if (!$this->view->template_exists($templateName)) {
+                        $templateName = mb_strtolower("openid_auth_loginformfields_default_default.tpl");
+                        if (!$this->view->template_exists($templateName)) {
+                            throw new Zikula_Exception_Fatal($this->__f('A form fields template was not found for the %1$s method using form type \'%2$s\'.', array($args['method'], $args['form_type'])));
+                        }
+                    }
+                }
+            }
 
-        return $this->view->assign('authentication_method', $method)
-                          ->fetch($templateName);
+            return $this->view->assign('authentication_method', $args['method'])
+                              ->fetch($templateName);
+        }
     }
 
     /**

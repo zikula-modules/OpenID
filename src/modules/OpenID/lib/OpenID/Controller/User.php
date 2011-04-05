@@ -147,7 +147,8 @@ class OpenID_Controller_User extends Zikula_AbstractController
 
                     if ($passwordValidates) {
                         if (!empty($authenticationInfo['claimed_id'])) {
-                            $saved = ModUtil::apiFunc($this->getName(), 'user', 'addOpenID', array(
+                            $saved = ModUtil::apiFunc($this->getName(), 'authentication', 'register', array(
+                                'uid'                   => UserUtil::getVar('uid'),
                                 'authentication_info'   => $authenticationInfo,
                                 'authentication_method' => $selectedAuthenticationMethod,
                             ));
