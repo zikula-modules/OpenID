@@ -543,7 +543,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
                 $this->request->getSession()->set('claimed_id', $checkPasswordResult['claimed_id'], $args['set_claimed_id']);
             }
-       }
+        }
             
         return $passwordAuthenticates;
     }
@@ -644,6 +644,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     public function getUidForAuthenticationInfo(array $args)
     {
+        $claimedUid = false;
+        
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
@@ -653,19 +655,18 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $userMapTable = Doctrine_Core::getTable('OpenID_Model_UserMap');
                 $userMap = $userMapTable->getByClaimedId($args['authentication_info']['claimed_id']);
                 if ($userMap) {
-                    return $userMap['uid'];
-                } else {
-                    // No user record mapped to that claimed id.
-                    return false;
+                    $claimedUid = $userMap['uid'];
                 }
             } catch (Exception $e) {
-                // TODO - Return false or an exception?
-                return false;
+                // TODO - Return false (by default); but should we return an exception?
             }
-        } else {
-            // No claimed id specified.
-            return false;
         }
+        
+        if (!$claimedUid) {
+           $this->registerError($this->__('Sorry! The information you provided was incorrect. Please check the log-in service you selected and the id you entered, and make sure they match the information associated with your account on this site.'));
+        }
+        
+        return $claimedUid;
     }
 
     /**
