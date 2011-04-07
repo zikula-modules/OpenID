@@ -726,4 +726,89 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         return $authenticatedUid;
     }
 
+    public function getAuthenticationMethodsForUid(array $args)
+    {
+        if (!isset($args) || !empty($args)) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid parameter array was received.'));
+        }
+        
+        $uid = isset($args['uid']) ? $args['uid'] : false;
+        if (!isset($uid) || !is_numeric($uid) || ((string)((int)$uid) != $uid)) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid user id was received.'));
+        }
+        
+        try {
+            $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                ->getAllForUid($uid);
+        } catch (Exception $e) {
+            $message = $this->__('There was a problem accessing the OpenID authentication user map.');
+            if (System::isDevelopmentMode()) {
+                $message .= ' ' . $this->__f('The error was: %1$s', array($e->getMessage()));
+            }
+            throw new Zikula_Exception_Fatal($message);
+        }
+        
+        $authenticationMethods = array();
+        if (!empty($userMapList)) {
+            foreach ($userMapList as $userMap) {
+                if (isset($this->authenticationMethods[$userMap['authentication_method']])) {
+                    $authenticationMethod = $this->authenticationMethods[$userMap['authentication_method']];
+                    $helper = OpenID_Helper_Builder::buildInstance($authenticationMethod->getMethod(), array('clamied_id' => $userMap['claimed_id']));
+                    $authenticationMethods[] = array(
+                        'modname'           => $this->name,
+                        'method'            => $userMap['authentication_method'],
+                        'claimed_id'        => $userMap['claimed_id'],
+                        'display_id'        => $userMap['display_id'],
+                        'short_description' => $helper->getShortDescription(),
+                        'long_description'  => $helper->getLongDescription(),
+                    );
+                }
+            }
+        }
+        
+        return $authenticationMethods;
+    }
+    
+    public function getLostUserNames(array $args)
+    {
+        if (!isset($args) || !empty($args)) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid parameter array was received.'));
+        }
+        
+        $uid = isset($args['uid']) ? $args['uid'] : false;
+        if (!isset($uid) || !is_numeric($uid) || ((string)((int)$uid) != $uid)) {
+            throw new Zikula_Exception_Fatal($this->__('An invalid user id was received.'));
+        }
+
+        try {
+            $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
+                ->getAllForUid($uid);
+        } catch (Exception $e) {
+            $message = $this->__('There was a problem accessing the OpenID authentication user map.');
+            if (System::isDevelopmentMode()) {
+                $message .= ' ' . $this->__f('The error was: %1$s', array($e->getMessage()));
+            }
+            throw new Zikula_Exception_Fatal($message);
+        }
+        
+        $lostUserNames = array();
+        if (!empty($userMapList)) {
+            foreach ($userMapList as $userMap) {
+                if (isset($this->authenticationMethods[$userMap['authentication_method']])) {
+                    $authenticationMethod = $this->authenticationMethods[$userMap['authentication_method']];
+                    if ($authenticationMethod->enabledForAuthentication()) {
+                        $helper = OpenID_Helper_Builder::buildInstance($authenticationMethod->getMethod(), array('clamied_id' => $userMap['claimed_id']));
+                        $lostUserNames[] = array(
+                            'short_description' => $helper->getShortDescription(),
+                            'long_description'  => $helper->getLongDescription(),
+                            'uname'             => $userMap['display_id'],
+                            'link'              => $userMap['claimed_id'],
+                        );
+                    }
+                }
+            }
+        }
+        
+        return $lostUserNames;
+    }
 }
