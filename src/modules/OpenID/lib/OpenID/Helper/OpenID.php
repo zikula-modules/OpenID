@@ -15,7 +15,7 @@
 /**
  * A helper or utility class that provides information for an OpenID provider in expected formats for the protocol.
  */
-class OpenID_Helper_OpenID extends Zikula_AbstractBase
+class OpenID_Helper_OpenID extends Zikula_AbstractHelper
 {
     /**
      * The OpenID supplied id, as an OpenID Server endpoint.
@@ -77,6 +77,9 @@ class OpenID_Helper_OpenID extends Zikula_AbstractBase
                 }
                 if (isset($urlParts['query']) && !empty($urlParts['query'])) {
                     $displayName .= '?' . $urlParts['query'];
+                }
+                if (isset($urlParts['fragment']) && !empty($urlParts['fragment'])) {
+                    $displayName .= '#' . $urlParts['fragment'];
                 }
             } else {
                 $displayName = $claimedId;
