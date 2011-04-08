@@ -578,6 +578,9 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * This function differs from login()  in that no attempt is made to match the authentication info with and map to a
      * Zikula user account. It does not return a Zikula user id (uid). In addition this function makes no attempt to
      * perform any login-related processes on the authenticating system.
+     * 
+     * Parameters passed in the $args array:
+     * -------------------------------------
      *
      * @param array $args All arguments passed to this function.
      *                      array   authentication_info    The authentication info needed for this authmodule, including any user-entered password.
@@ -635,9 +638,12 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * ids (uids). Returning the wrong uid for a given authentication info will potentially expose a user's account to
      * unauthorized access. Custom authmodules must also ensure that they keep their mapping table in sync with
      * the user's account.
+     * 
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * array   authentication_info The authentication information uniquely associated with a user. It should contain a 'claimed_id'.
      *
      * @param array $args All arguments passed to this function.
-     *                      array   authentication_info    The authentication information uniquely associated with a user.
      *
      * @return integer|boolean The integer Zikula uid uniquely associated with the given authentication info;
      *                         otherwise false if user not found or error.
@@ -649,7 +655,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
-
+        
         if (isset($args['authentication_info']['claimed_id'])) {
             try {
                 $userMapTable = Doctrine_Core::getTable('OpenID_Model_UserMap');
@@ -660,10 +666,6 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             } catch (Exception $e) {
                 // TODO - Return false (by default); but should we return an exception?
             }
-        }
-        
-        if (!$claimedUid) {
-           $this->registerError($this->__('Sorry! The information you provided was incorrect. Please check the log-in service you selected and the id you entered, and make sure they match the information associated with your account on this site.'));
         }
         
         return $claimedUid;
@@ -692,6 +694,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     public function authenticateUser(array $args)
     {
+        $authenticatedUid = false;
+        
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
@@ -712,14 +716,14 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             $this->request->getSession()->clearNamespace('OpenID_Authentication_authenticateUser');
             $args['authentication_info']['claimed_id'] = $claimedID;
 
-            $uid = ModUtil::apiFunc($this->getName(), 'Authentication', 'getUidForAuthenticationInfo', $args, 'Zikula_Api_AbstractAuthentication');
+            $authenticatedUid = ModUtil::apiFunc($this->getName(), 'Authentication', 'getUidForAuthenticationInfo', $args, 'Zikula_Api_AbstractAuthentication');
 
-            if ($uid) {
-                return $uid;
+            if (!$authenticatedUid) {
+                $this->registerError($this->__('Sorry! The information you provided was incorrect. Please check the log-in service you selected and the id you entered, and make sure they match the information associated with your account on this site.'));
             }
         }
 
-        return false;
+        return $authenticatedUid;
     }
 
 }
