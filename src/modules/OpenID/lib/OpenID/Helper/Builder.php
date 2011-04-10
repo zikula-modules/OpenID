@@ -27,27 +27,27 @@ class OpenID_Helper_Builder
      *                                          method, and initialized with the authentication information provided; false if an error or exception 
      *                                          occurs or if the authentication method is not recognized.
      */
-    public static function buildInstance($authenticationMethod, $authenticationInfo)
+    public static function buildInstance(object $helpee, $authenticationMethod, array $authenticationInfo)
     {
         try {
             switch (strtolower($authenticationMethod)) {
                 case 'google':
-                    return new OpenID_Helper_Google($authenticationInfo);
+                    return new OpenID_Helper_Google($helpee, $authenticationInfo);
                     break;
                 case 'myid':
-                    return new OpenID_Helper_MyID($authenticationInfo);
+                    return new OpenID_Helper_MyID($helpee, $authenticationInfo);
                     break;
                 case 'myopenid':
-                    return new OpenID_Helper_MyOpenID($authenticationInfo);
+                    return new OpenID_Helper_MyOpenID($helpee, $authenticationInfo);
                     break;
                 case 'openid':
-                    return new OpenID_Helper_OpenID($authenticationInfo);
+                    return new OpenID_Helper_OpenID($helpee, $authenticationInfo);
                     break;
                 case 'pip':
-                    return new OpenID_Helper_VeriSignPIP($authenticationInfo);
+                    return new OpenID_Helper_VeriSignPIP($helpee, $authenticationInfo);
                     break;
                 case 'yahoo':
-                    return new OpenID_Helper_Yahoo($authenticationInfo);
+                    return new OpenID_Helper_Yahoo($helpee, $authenticationInfo);
                     break;
                 default:
                     return false;

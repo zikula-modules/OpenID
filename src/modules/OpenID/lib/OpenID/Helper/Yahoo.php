@@ -23,19 +23,6 @@ class OpenID_Helper_Yahoo extends OpenID_Helper_OpenID
     const USER_ENDPOINT = "http://yahoo.com";
     
     /**
-     * Builds a new instance of this class, extracting the supplied OpenID from the $authenticationInfo parameter.
-     *
-     * @param array $authenticationInfo An array containing the authentication information, and specifically, the OpenID supplied by the user
-     *                                      in the 'supplied_id' element which is used to initialize this instance.
-     */
-    public function __construct(array $authenticationInfo = null)
-    {
-        if (isset($authenticationInfo)) {
-            $this->suppliedId = $authenticationInfo['supplied_id'];
-        }
-    }
-
-    /**
      * Returns the supplied id.
      *
      * @return string The OpenID supplied by the user.

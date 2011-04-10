@@ -244,6 +244,31 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         return $authenticationMethods;
     }
     
+    /**
+     * Registers a user account record or a user registration request with the authentication method.
+     * 
+     * This is called during the user registration process to associate an authentication method provided by this authentication module
+     * with a user (either a full user account, or a user's registration request).
+     * 
+     * Parameters passed in the $args array:
+     * -------------------------------------
+     * array   'authentication_method' An array identifying the authentication method to associate with the user account or registration
+     *                                      record. The array should contain two elements: 'modname' containing the authentication module's
+     *                                      name (the name of this module), and 'method' containing the name of an authentication method
+     *                                      defined by this module.
+     * array   'authentication_info'   An array containing the authentication information for the user. For the OpenID module, this should
+     *                                      contain the user's supplied id and claimed id.
+     * numeric 'uid'                   The user id of the user account record or registration request to associate with the authentication method and
+     *                                      authentication information.
+     *
+     * @param array $args All parameters passed to this function.
+     * 
+     * @return boolean True if the user account or registration request was successfully associated with the authentication method and 
+     *                      authentication information; otherwise false.
+     * 
+     * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, or the user id, authentication method, or authentication information
+     *                                      is invalid.
+     */
     public function register(array $args)
     {
         if (!isset($args['uid']) || empty($args['uid']) || !is_numeric($args['uid']) || ((string)((int)$args['uid']) != $args['uid'])) {
@@ -272,7 +297,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received. Either an authentication module name or a method name was missing.'));
         }
         
-        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $authenticationMethod['method'], $authenticationInfo);
         if ($openidHelper == false) {
             throw new Zikula_Exception_Fatal($this->__('The authentication method \'%1$s\' does not appear to be supported by the authentication module \'%2$s\'.', array($authenticationMethod['method'], $authenticationMethod['modname'])));
         }
@@ -351,7 +376,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     protected function internalCheckPassword(array $authenticationMethod, array $authenticationInfo, $reentrantURL = null, $forRegistration = false)
     {
-        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $authenticationMethod['method'], $authenticationInfo);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
@@ -522,7 +547,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
         }
 
-        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
@@ -600,7 +625,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
         }
 
-        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
@@ -761,6 +786,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * @param array $args All parameters passed to this function.
      * 
      * @return An array of account recovery information.
+     * 
+     * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, if 
      */
     public function getAccountRecoveryInfoForUid(array $args)
     {

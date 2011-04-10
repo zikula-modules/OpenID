@@ -27,12 +27,18 @@ class OpenID_Helper_OpenID extends Zikula_AbstractHelper
     /**
      * Builds a new instance of this class, extracting the supplied OpenID from the $authenticationInfo parameter.
      *
-     * @param array $authenticationInfo An array containing the authentication information, and specifically, the OpenID supplied by the user
+     * @param object $helpee             An instance of the class that this helper is helping; an instance of Zikula_AbstractBase, Zikula_AbstractEventHandler, 
+     *                                      Zikula_Hook_AbstractHandler, Zikula_AbstractPlugin, Zikula_ServiceManager, or Zikula_EventManager.
+     * @param array  $authenticationInfo An array containing the authentication information, and specifically, the OpenID supplied by the user
      *                                      in the 'supplied_id' element which is used to initialize this instance.
      */
-    public function __construct(array $authenticationInfo)
+    public function __construct($helpee, array $authenticationInfo)
     {
-        $this->suppliedId = $authenticationInfo['supplied_id'];
+        parent::__construct($helpee);
+        
+        if (isset($authenticationInfo)) {
+            $this->suppliedId = $authenticationInfo['supplied_id'];
+        }
     }
 
     /**
