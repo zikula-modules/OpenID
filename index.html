@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="description" content="OpenID for Zikula is an authentication module for the Zikula CMS.">
+        <meta name="keywords" content="Zikula,module,OpenID,authentication">
+        <meta name="author" content="Robert Burkhead">
+        <link rel="stylesheet" type="text/css" href="style/basic-profile.css" title="Basic Profile" media="all">
+        <title>OpenID for Zikula</title>
+    </head>
+
+    <body>
+        <div id="wrap">
+            <div id="sidebar">
+                <h1><img src="images/small/openid-icon.png" alt=""> OpenID<sup>&trade;</sup> for Zikula<sup>&trade;</sup></h1>
+                <p class="slogan">an authentication module for zikula</p>
+
+                <ul>
+                    <li><a href="#overview">Overview</a><br>General module information...</li>
+                    <li><a href="#roadmap">Roadmap</a><br>General information about our plans...</li>
+                    <li><a href="#contributing">Contributing</a><br>Help make the module better...</li>
+                    <li><a href="http://github.com/zikula-modules/OpenID">Source Code Repository</a><br>Where all the action happens...</li>
+                    <li><a href="http://github.com/zikula-modules/OpenID/issues">Issues Tracker</a><br>Feature requests, bug reports, etc....</li>
+                    <li><a href="http://zikula.org">Zikula</a><br>The mothership...</li>
+                    <li><a href="http://openid.net">OpenID Foundation</a><br>More than you ever wanted to know about OpenID...</li>
+                </ul>
+            </div>
+
+            <div id="content">
+                <h2 id="overview">Overview</h2>
+                <p>Beginning with version 1.3.0, Zikula introduced it's <em>Authentication API</em>, which allows a module to provide authentication services
+                    in addition to those provided by the core Users module. A module providing authentication services allows a user to log into a Zikula
+                    site using credentials (something like, but not limited to, a user name and password) that are not managed by Zikula's core Users
+                    module. In addition, an authentication module can enable its authentication method(s) for registration, meaning that a new user can 
+                    request a new web site account using those credentials instead of creating a User name and password.</p>
+                <p>The <em><strong>OpenID for Zikula</strong></em> module allows a user to use his OpenID as his credentials for both logging into, and
+                    for registering a new account with a Zikula-based web site.</p>
+
+                <h2 id="roadmap">Roadmap</h2>
+                <p>Last updated: 23 Apr 2011 18:24 UTC</p>
+                
+                <h3>Version 1.0.0</h3>
+                <p id="plannedrelease-1-0-0">Planned Release:</p>
+                <ul>
+                    <li>Shortly after general availability of Zikula core version 1.3.0.</li>
+                </ul>
+                <p id="plannedfeatures-1-0-0">Planned Features:</p>
+                <ul>
+                    <li>Full implementation of the Authentication API, including registration.</li>
+                    <li>Basic OpenID authentication workflow for a fixed number of major OpenID providers.</li>
+                    <li>Striving to support both unencrypted and SSL connections to OpenID providers, but see <a href="#currentissues-1-0-0">Current Issues</a>.</li>
+                </ul>
+                <p id="currentissues-1-0-0">Current Issues Affecting This Version:</p>
+                <ul>
+                    <li>We initially used the <code>php-openid</code> library from JanRain, as it appeared to be the better implementation, the 
+                        most stable of options, and the option with the least number of external dependencies. Unfortunately, it appears as though
+                        JanRain has abandoned the library as of late 2010. The remaining otherwise viable options were the Zend library and the PEAR
+                        library. The Zend library has not been updated in a while either. The PEAR library comes with a plethora of additional 
+                        PEAR library dependencies. </li>
+                </ul>
+                
+                <h3>Version 1.1.0</h3>
+                <p id="plannedfeatures-1-1-0">Planned Features:</p>
+                <ul>
+                    <li>Additional administrative options and features.</li>
+                    <li>Additional OpenID providers.</li>
+                </ul>
+                
+                <h2 id="contributing">Contributing</h2>
+                <p>This project uses the collaborator/contributor model for developer participation. Essentially, anyone can contribute to this
+                    project!</p>
+                <p>In the collaborator/contributor model, everyone is a contributor by default. To contribute to the project, fork the repository,
+                    start a new branch in your fork for the changes you'd like to make, push that branch back to your forked repository here on
+                    GitHub, and issue a pull request. Someone with direct commit access to the main repository (a collaborator) will review
+                    your pull request. If it is acceptable, then your changes will be merged into the master branch (or an appropriate version 
+                    or task branch) of the main repository.</p>
+                <p>Collaborators are those who have made a special commitment of their time and energy to this project, and have agreed to work
+                    toward the goals of the project as outlined in the roadmap. They have been granted permission to commit directly to the 
+                    main repository, and also have the ability to fulfill pull requests. The best way to become a collaborator in this project
+                    is to take on several issues in the issues tracker as a contributor. Resolve those issues and make pull requests. As your
+                    pull requests are accepted, the team of collaborators gains confidence in your ability to work on the project. At some
+                    point let one of the collaborators know that you'd be interested in getting direct commit access, and your request will 
+                    be evaluated by the team.</p>
+
+            </div>
+            <div id="footer">
+                <hr>
+                <p class="credits">Copyright &copy; 2011 <a href="http://zikula.org">Zikula Software Foundation</a><br>
+                    Page last updated: 23 Apr 2011 18:24 UTC<br>
+                    OpenID and the OpenID logo are registered trademarks of <a href="http://openid.net">The OpenID Foundation</a><br>
+                    Zikula and the Zikula logo are registered trademarks of the <a href="http://zikula.org">Zikula Software Foundation</a><br>
+                    Template design by <a href="http://andreasviklund.com/">Andreas Viklund</a></p>
+            </div>
+        </div>
+    </body>
+</html>

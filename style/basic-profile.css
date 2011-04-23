@@ -1,0 +1,77 @@
+/*
+Original design: Basic Profile (v1.0 - March 23rd, 2011) - A free xhtml/css website template by Andreas Viklund.
+For more information, see http://andreasviklund.com/templates/basic-profile/
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+body {background:#fff; color:#303030; font:84% Arial,Helvetica,sans-serif; line-height:1.6em;}
+a {color:#cc6600; text-decoration:none;}
+a:hover {text-decoration:underline;}
+p{margin:0 0 1em 0;}
+ul,ol,dl {margin:0 0 1em 20px;}
+ul {list-style: disc;}
+h1 {color:#888; font-size:2em; line-height:1.1em; letter-spacing:-3px; margin:20px 0 0 0;}
+h1 a {color:#888; text-transform:none;}
+h2 {font-size:2.2em; color:#333; margin:0 0 20px; letter-spacing:-1px; border-bottom:2px solid #eee;}
+h3 {font-size:1.8em; margin:10px 0 15px 0; letter-spacing:-1px; border-bottom:2px solid #eee;}
+h1,h2,h3 {font-weight:700; line-height:1.4em;}
+sup {font-size: 60%; line-height: 100%; vertical-align: text-top;}
+#wrap {color:#303030; margin:40px auto; padding:0; width:980px;}
+#content {text-align:left; width:600px; padding-right:40px;}
+#sidebar {float:right; width:280px; padding-left:40px; border-left:2px solid #ccc;}
+#sidebar ul {list-style:none; margin:0; padding:10px 0 0 0; border-top:1px solid #eee;}
+#sidebar li {list-style:none; font-size:1.2em; margin:0 0 10px; padding:0 0 10px 0; color:#888; border-bottom:1px solid #eee;}
+#sidebar li a {font-size:1.2em;}
+#sidebar h2 {font-size: 1.4em;}
+#footer {text-align:left;}
+div#footer > hr {margin: 2em 0 1em 0;}
+.slogan {color:#bbb; font-size:1.1em; font-weight:700; margin:0 0 20px 0; letter-spacing:-1px;}
+.readmore {text-align:right; margin:0 20px 30px 0;}
+.timestamp {display:block; font-weight:700; color:#888; text-align:right; width:150px; padding:20px 20px 20px 0; float:left; margin:0 20px 20px 0; border-right:2px solid #eee;}
+.timestamp a {font-weight:normal;}
+.credits {display:block; clear:left; font-size:0.9em; color:#aaa; margin:20px 0;}
+.credits a {color:#888;}
+.clear {clear:both;}
