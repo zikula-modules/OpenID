@@ -217,6 +217,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
      */
     public function validateAuthenticationInformation(array $args)
     {
+        return true;
         // TODO: Implement validateAuthenticationInformation() method.
     }
 }

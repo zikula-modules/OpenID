@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright Zikula Foundation 2011 - Zikula Application Framework
+ * Copyright Zikula Foundation 2013 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
@@ -11,9 +11,6 @@
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
-
-// Hack for JanRain's inability to load via ZLoader, and for error messages
-@require_once 'Auth/OpenID/SReg.php';
 
 /**
  * The user authentication services for the log-in process through the OpenID protocol.
@@ -127,6 +124,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     public function isReentrant()
     {
+        
         return true;
     }
 
@@ -368,11 +366,13 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * @param array   $authenticationInfo   An array containing the authentication information supplied by the user; for this module, a 'supplied_id'.
      * @param string  $reentrantURL         The URL to which an external OpenID Provider should return in order to reenter the authentication proces
      *                                          following a user's attempt to authenticate on the external server.
-     * @param boolean $forRegistration      If true, then a simple registration request extension will be added to the OpenID authentication request, 
+     * @param boolean $forRegistration      If true, then a simple registration request extension will be added to the OpenID authentication request,
      *                                          asking for the user's nickname and email address.
      *
      * @return array|boolean If the authentication info authenticates with the source, then an array containing the 'claimed_id', and any optional
      *                              simple registration fields; otherwise false on authentication failure or error.
+     *
+     * @throws Zikula_Exception_Fatal
      */
     protected function internalCheckPassword(array $authenticationMethod, array $authenticationInfo, $reentrantURL = null, $forRegistration = false)
     {
@@ -415,7 +415,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     // message.
                     if (Auth_OpenID::isFailure($redirectURL)) {
                         if (System::isDevelopmentMode()) {
-                            $this->registerError($this->__f("Could not redirect to OpenID server: %1$s", $redirectURL->message));
+                            $this->registerError($this->__f('Could not redirect to OpenID server: %1$s', $redirectURL->message));
                             return false;
                         } else {
                             $this->registerError($this->__("Could not redirect to OpenID server."));
@@ -436,7 +436,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     // otherwise, render the HTML.
                     if (Auth_OpenID::isFailure($postFormHTML)) {
                         if (System::isDevelopmentMode()) {
-                            return LogUtil::registerError($this->__f("Could not redirect to OpenID server: %1$s", $postFormHTML->message));
+                            return LogUtil::registerError($this->__f('Could not redirect to OpenID server: %1$s', $postFormHTML->message));
                         } else {
                             return LogUtil::registerError($this->__("Could not redirect to OpenID server."));
                         }
@@ -534,6 +534,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *                      array   authentication_info    The authentication info needed for this authmodule, including any user-entered password.
      *
      * @return boolean True if the authentication info authenticates with the source; otherwise false on authentication failure or error.
+     *
+     * @throws Zikula_Exception_Fatal
      */
     public function checkPassword(array $args)
     {
@@ -612,6 +614,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *
      * @return array|boolean If the authentication info authenticates with the source, then an array is returned containing the user's 'claimed_id',
      *                              plus requested simple registration information from the OpenID server; otherwise false on authentication failure or error.
+     *
+     * @throws Zikula_Exception_Fatal
      */
     public function checkPasswordForRegistration(array $args)
     {
@@ -672,6 +676,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *
      * @return integer|boolean The integer Zikula uid uniquely associated with the given authentication info;
      *                         otherwise false if user not found or error.
+     *
+     * @throws Zikula_Exception_Fatal
      */
     public function getUidForAuthenticationInfo(array $args)
     {
@@ -716,6 +722,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *
      * @return integer|boolean If the authentication info authenticates with the source, then the Zikula uid associated with that login ID;
      *                         otherwise false on authentication failure or error.
+     *
+     * @throws Zikula_Exception_Fatal
      */
     public function authenticateUser(array $args)
     {
