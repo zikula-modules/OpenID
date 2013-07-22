@@ -1,0 +1,17 @@
+{
+    "name": "zikula-modules/openid",
+    "description": "Provides OpenID authentication for Zikula user accounts.",
+    "require": {
+        "openid/php-openid": "dev-master"
+    },
+    "license": "LGPL",
+    "authors": [
+        {
+            "name": "cmfcmf",
+            "email": "cmfcmf.flach@gmail.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": "lib/vendor"
+    }
+}

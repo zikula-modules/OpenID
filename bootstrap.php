@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright Zikula Foundation 2009 - Zikula Application Framework
+ * Copyright Zikula Foundation 2013 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
@@ -12,15 +12,15 @@
  * information regarding copyright and licensing.
  */
 
-$libVendorPath = dirname(__FILE__) . '/lib/vendor/Janrain-php-openid';
-ZLoader::addAutoloader('Auth', $libVendorPath);
+// Load composer generated autoload file.
+$autoloaderPath = dirname(__FILE__) . '/lib/vendor/autoload.php';
 
-// JanRain OpenID Libraries use require_once, so we need to ensure their stuff is on the include_path
-$includePath = ini_get('include_path');
-if ((strpos($includePath, PATH_SEPARATOR . $libVendorPath) === false)
-    && (strpos($includePath, $libVendorPath . PATH_SEPARATOR) === false)
-    && ($includePath !== $libVendorPath))
-{
-    set_include_path((!empty($includePath) ? $includePath . PATH_SEPARATOR : '') . $libVendorPath);
+if (file_exists($autoloaderPath)) {
+    require($autoloaderPath);
+} else {
+    echo "The OpenID module could not find the required php-openid library.<br />";
+    echo "If you are a developer, run \"composer update\" to add the library.<br />";
+    echo "If you are a normal user, please don't download the source of this module from github. Please download a released version from ";
+    echo "<a href=\"https://github.com/zikula-modules/OpenID/releases\">https://github.com/zikula-modules/OpenID/releases</a> instead.<br />";
+    echo "Once you did that, you do not need to reinstall this module. Just overwrite the module's files.";
 }
-define('Auth_OpenID_RAND_SOURCE', null);
