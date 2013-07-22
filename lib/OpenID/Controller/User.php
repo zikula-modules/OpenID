@@ -34,7 +34,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
      */
     public function view()
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
+        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->name.'::self', '::', ACCESS_COMMENT)) {
             throw new Zikula_Exception_Forbidden();
         }
 
@@ -49,24 +49,24 @@ class OpenID_Controller_User extends Zikula_AbstractController
 
         return $this->view->assign('openids', $openIds ? $openIds : array())
                 ->assign('actions', $actions)
-                ->fetch('openid_user_view.tpl');
+                ->fetch('User/view.tpl');
     }
 
     /**
      * Render a form suitable for adding a new OpenID to the user's account.
-     * 
+     *
      * GET Parameters Used:
      * --------------------
      * string 'reentranttoken' A nonce used to indicate that the user is returning to this function from a reentrant external call to
      *                              an external authentication server of some sort (for this module, an OpenID Provider).
-     * 
+     *
      * POST Parameters Used:
      * ---------------------
      * string 'authentication_method' The name of one of the authentication methods supported by this module.
      * string 'openid_identifier'     If the authentication method is set to 'openid' then this contains the identifier supplied by the user.
-     * string 'pip_username'          If the authentication method is set to 'pip' then this is either the PIP user name for the user, or 
+     * string 'pip_username'          If the authentication method is set to 'pip' then this is either the PIP user name for the user, or
      *                                      the full OpenID URL pointing to the user's PIP account.
-     * 
+     *
      * SESSION Variables Used, 'OpenID_Controller_User_newOpenID' Namespace:
      * ---------------------------------------------------------------------
      * array  'authenticationMethod' An array containing the module name ('modname') and method name ('method') that identifies the authentication
@@ -75,12 +75,12 @@ class OpenID_Controller_User extends Zikula_AbstractController
      * array  'authenticationInfo'   An array containing the authentication information entered by the user, including the supplied id.
      * string  'claimed_id'          A normalized and authenticated version of the supplied id which represents the OpenID URL claimed by the user
      *                                  as identifying him. This is set and returned by the authentication process.
-     * string 'reentrantToken'       The nonce used to signal that the user has exited to and is reentering this function from areentrant external 
+     * string 'reentrantToken'       The nonce used to signal that the user has exited to and is reentering this function from areentrant external
      *                                  call to an OpenID server.
-     * 
-     * @return
-     * 
-     * @throws Zikula_Exception_Forbidden Thrown if the user is not logged in; does not have comment access for his 
+     *
+     * @return string The rendered template.
+     *
+     * @throws Zikula_Exception_Forbidden Thrown if the user is not logged in; does not have comment access for his
      *                                          own record; or the function is access improperly.
      */
     public function newOpenID()
@@ -92,14 +92,14 @@ class OpenID_Controller_User extends Zikula_AbstractController
         $proceedToForm = true;
         $changeAuthenticatonMethod = false;
 
-        if ($this->request->isPost() || ($this->request->isGet() && $this->request->getGet()->has('reentranttoken'))) {
+        if ($this->request->isPost() || ($this->request->isGet() && $this->request->query->has('reentranttoken'))) {
             if ($this->request->isPost()) {
                 $this->checkCsrfToken();
                 
-                $selectedAuthenticationMethod = $this->request->getPost()->get('authentication_method', array());
+                $selectedAuthenticationMethod = $this->request->request->get('authentication_method', array());
                 $authenticationInfo = array();
                 
-                if ($this->request->getPost()->has('changeto')) {
+                if ($this->request->request->has('changeto')) {
                     $changeAuthenticatonMethod = true;
                 } else {
                     switch (strtolower($selectedAuthenticationMethod['method'])) {
@@ -110,15 +110,15 @@ class OpenID_Controller_User extends Zikula_AbstractController
                             $authenticationInfo['supplied_id'] = 'yahoo';
                             break;
                         case 'openid':
-                            $authenticationInfo['supplied_id'] = $this->request->getPost()->get('openid_identifier', '');
+                            $authenticationInfo['supplied_id'] = $this->request->request->get('openid_identifier', '');
                             break;
                         default:
-                            $authenticationInfo['supplied_id'] = $this->request->getPost()->get('username', '');
+                            $authenticationInfo['supplied_id'] = $this->request->request->get('username', '');
                             break;
                     }
                 }
             } else {
-                $reentrantTokenReceived = $this->request->getGet()->get('reentranttoken');
+                $reentrantTokenReceived = $this->request->query->get('reentranttoken');
                 $selectedAuthenticationMethod = $this->request->getSession()->get('authenticationMethod', array(), 'OpenID_Controller_User_newOpenID');
                 $authenticationInfo = $this->request->getSession()->get('authenticationInfo', array(), 'OpenID_Controller_User_newOpenID');
                 $reentrantToken = $this->request->getSession()->get('reentrantToken', false, 'OpenID_Controller_User_newOpenID');
@@ -173,7 +173,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
             $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
             
             $selectedAuthenticationMethod['modname'] = $this->name;
-            $selectedAuthenticationMethod['method'] = $this->request->getGet()->get('authentication_method', 'OpenID');
+            $selectedAuthenticationMethod['method'] = $this->request->query->get('authentication_method', 'OpenID');
             $authenticationInfo = array();
         } else {
             throw new Zikula_Exception_Forbidden();
@@ -209,7 +209,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
             );
 
             return $this->view->assign($viewArgs)
-                ->fetch('openid_user_newopenid.tpl');
+                ->fetch('User/newopenid.tpl');
         } else {
             $this->redirect(ModUtil::url($this->name, 'user', 'view'));
         }
@@ -228,12 +228,12 @@ class OpenID_Controller_User extends Zikula_AbstractController
         if ($this->request->isPost()) {
             $this->checkCsrfToken();
             
-            $id = $this->request->getPost()->get('id', null);
+            $id = $this->request->request->get('id', null);
             if (!isset($id) || ((string)((int)$id) != $id)) {
                 throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
             }
             
-            $confirmed = $this->request->getPost()->get('confirmed', null);
+            $confirmed = $this->request->request->get('confirmed', null);
             if (!isset($confirmed)) {
                 throw new Zikula_Exception_Fatal($this->__('An invalid confirmation flag was recevied.'));
             }
@@ -266,7 +266,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
                 }
             }
         } elseif ($this->request->isGet()) {
-            $id = $this->request->getGet()->get('id', null);
+            $id = $this->request->query->get('id', null);
             if (!isset($id) || ((string)((int)$id) != $id)) {
                 throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
             }
@@ -298,7 +298,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
         
         if ($proceedToForm) {
             return $this->view->assign('openid', $userMap)
-                    ->fetch('openid_user_removeopenid.tpl');
+                    ->fetch('User/removeopenid.tpl');
         } else {
             $this->redirect(ModUtil::url($this->name, 'user', 'view'));
         }
@@ -309,16 +309,16 @@ class OpenID_Controller_User extends Zikula_AbstractController
      * 
      * GET Parameters used:
      * --------------------
-     * string 'legalreturn' The URL to which the user should be returned when clicking on the approrpriate link.
+     * string 'legalreturn' The URL to which the user should be returned when clicking on the appropriate link.
      *
      * @return string The rendered template.
      */
     public function legalNotice()
     {
-        $returnUrl = $this->request->getGet()->get('legalreturn', '');
+        $returnUrl = $this->request->query->get('legalreturn', '');
         
         return $this->view->assign('returnUrl', $returnUrl)
-                ->fetch('openid_user_legalnotice.tpl');
+                ->fetch('User/legalnotice.tpl');
     }
 
 }

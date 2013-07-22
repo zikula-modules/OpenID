@@ -20,4 +20,4 @@
         <a class="z-btred" href="{modurl modname='OpenID' type='user' func='view'}" title="{gt text='Cancel'}">{img modname='core' src='button_cancel.png' set='icons/extrasmall' __alt='Cancel' __title='Cancel'} {gt text='Cancel'}</a>
     </div>
 </form>
-
+{include file="legalfooter.tpl"}

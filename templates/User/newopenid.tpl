@@ -93,4 +93,4 @@
         <a href="{modurl modname=$module type='user' func='view'}" title="{gt text='Cancel'}">{icon type='cancel' size='extrasmall' __alt='Cancel' __title='Cancel'} {gt text='Cancel'}</a>
     </div>
 </form>
-{include file="openid_common_legalfooter.tpl"}
+{include file="legalfooter.tpl"}

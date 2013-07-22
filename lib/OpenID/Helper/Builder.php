@@ -20,11 +20,12 @@ class OpenID_Helper_Builder
     /**
      * Builds an instance of OpenID_Helper_OpenID or one of its subclasses or sibling classes, based on a specified authentication method.
      *
-     * @param string $authenticationMethod The authentication method for which a helper should be built and returned.
-     * @param string $authenticationInfo   The authentication information entered by the user, and passed on to the helper.
-     * 
+     * @param object       $helpee
+     * @param string       $authenticationMethod The authentication method for which a helper should be built and returned.
+     * @param array|string $authenticationInfo   The authentication information entered by the user, and passed on to the helper.
+     *
      * @return boolean|OpenID_Helper_OpenID An instance of OpenID_Helper_OpenID or one of its siblings or subclasses appropriate for the authentication
-     *                                          method, and initialized with the authentication information provided; false if an error or exception 
+     *                                          method, and initialized with the authentication information provided; false if an error or exception
      *                                          occurs or if the authentication method is not recognized.
      */
     public static function buildInstance(object $helpee, $authenticationMethod, array $authenticationInfo)

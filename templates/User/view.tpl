@@ -75,7 +75,7 @@
     {/strip}
     <a href="{modurl modname=$module type='user' func='newOpenID'}" title="{$addText}">{icon type='add' size='extrasmall' alt=$addText title=$addText} {$addText}</a>
 </div>
-{include file="openid_common_legalfooter.tpl"}
+{include file="legalfooter.tpl"}
 
 <script type="text/javascript">
     Zikula.UI.Tooltips($$('.tooltips'));
