@@ -14,6 +14,14 @@ table.z-datatable td.oid-action {
 
 }
 
+#dialog-confirm-setpassword {
+    text-align: left;
+}
+
+.oid-button-row {
+    margin-bottom: 10px;
+}
+
 div.authentication_select_method_bigbutton #authentication_select_method_submit_openid_google {
     background-image: url("../images/medium/google-favicon.png");
 }
