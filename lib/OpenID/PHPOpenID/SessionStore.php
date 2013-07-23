@@ -13,9 +13,6 @@
  * information regarding copyright and licensing.
  */
 
-// Auth_Yadis_PHPSession is defined in Auth_Yadis_Manager.php
-ZLoader::autoload('Auth_Yadis_Manager');
-
 /**
  * The session storage class used by the Auth_Yadis_Manager.
  * 

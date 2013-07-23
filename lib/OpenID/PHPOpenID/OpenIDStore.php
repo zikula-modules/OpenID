@@ -13,10 +13,6 @@
  * information regarding copyright and licensing.
  */
 
-// Janrain's php-openid does not use PEAR style autoloading.
-require_once 'Auth/OpenID/Interface.php';
-require_once 'Auth/OpenID/Nonce.php';
-
 /**
  * Provides storage services for OpenID protocol housekeeping information maintained by the php-openid library.
  */

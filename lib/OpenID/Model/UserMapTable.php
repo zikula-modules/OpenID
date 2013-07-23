@@ -47,7 +47,7 @@ class OpenID_Model_UserMapTable extends Doctrine_Table
         $this->addNamedQuery('get.all', Doctrine_Query::create()
             ->select('um.*')
             ->from('OpenID_Model_UserMap um')
-            ->orderBy('um.uid, um.openid_type, um.claimed_id'));
+            ->orderBy('um.uid, um.claimed_id'));
 
         $this->addNamedQuery('get.all.for.uid', Doctrine_Query::create()
             ->select('um.*')

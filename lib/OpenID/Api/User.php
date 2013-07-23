@@ -12,6 +12,8 @@
  * information regarding copyright and licensing.
  */
 
+use Symfony\Component\Finder\Finder;
+
 /**
  * User-oriented API function for the OpenID module.
  */
@@ -182,5 +184,27 @@ class OpenID_Api_User extends Zikula_AbstractApi
                 return false;
             }
         }
+    }
+
+    public function getAllOpenIdProvider($args)
+    {
+        $finder = new Finder();
+        $finder->files()
+                ->in(__DIR__ . "/../Helper")
+                ->name('*.php')
+                ->notName('OpenID.php')
+                ->notName('Builder.php')
+                ->notName('AuthenticationMethod.php')
+                ->depth('== 0')
+                ->sortByName();
+
+        $provider = array();
+
+        foreach ($finder as $file) {
+            $classname =  'OpenID_Helper_' . substr($file->getRelativePathname(), 0, -4);
+            $provider[] = new $classname(new stdClass());
+        }
+
+        return $provider;
     }
 }

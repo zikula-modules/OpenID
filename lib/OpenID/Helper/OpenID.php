@@ -98,4 +98,16 @@ class OpenID_Helper_OpenID extends Zikula_AbstractHelper
 
         return $displayName;
     }
+
+    public function getProviderName()
+    {
+        $parts = explode('_', get_class($this));
+
+        return $parts[2];
+    }
+
+    public function getProviderDisplayName()
+    {
+        return $this->getProviderName();
+    }
 }

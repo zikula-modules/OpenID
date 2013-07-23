@@ -44,4 +44,13 @@ class OpenID_Helper_Google extends OpenID_Helper_OpenID
         return $this->__('(Google does not return a displayable name for your account)');
     }
 
+    public function getProviderName()
+    {
+        return 'Google';
+    }
+
+    public function getProviderDisplayName()
+    {
+        return 'Google';
+    }
 }

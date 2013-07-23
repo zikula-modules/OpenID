@@ -37,7 +37,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         
         $sslEnabled = function_exists('openssl_open');
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'Google',
                 $this->__('Google Account'),
@@ -46,15 +46,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         );
         // Google requires an SSL connection.
         if ($sslEnabled) {
-            $authenticationMethod->enableForAuthentication();
-            $authenticationMethod->enableForRegistration();
+            $authenticationMethod->tryToEnableForAuthentication();
+            $authenticationMethod->tryToEnableForRegistration();
         } else {
             $authenticationMethod->disableForAuthentication();
             $authenticationMethod->disableForRegistration();
         }
         $this->authenticationMethods['Google'] = $authenticationMethod;
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'Yahoo',
                 $this->__('Yahoo!'),
@@ -62,56 +62,56 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 true
         );
         if ($sslEnabled) {
-            $authenticationMethod->enableForAuthentication();
-            $authenticationMethod->enableForRegistration();
+            $authenticationMethod->tryToEnableForAuthentication();
+            $authenticationMethod->tryToEnableForRegistration();
         } else {
             $authenticationMethod->disableForAuthentication();
             $authenticationMethod->disableForRegistration();
         }
         $this->authenticationMethods['Yahoo'] = $authenticationMethod;
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'myOpenID',
                 $this->__('myOpenID'),
                 $this->__('myOpenID'),
                 true
         );
-        $authenticationMethod->enableForAuthentication();
-        $authenticationMethod->enableForRegistration();
+        $authenticationMethod->tryToEnableForAuthentication();
+        $authenticationMethod->tryToEnableForRegistration();
         $this->authenticationMethods['myOpenID'] = $authenticationMethod;
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'OpenID',
                 $this->__('OpenID'),
                 $this->__('OpenID'),
                 true
         );
-        $authenticationMethod->enableForAuthentication();
-        $authenticationMethod->enableForRegistration();
+        $authenticationMethod->tryToEnableForAuthentication();
+        $authenticationMethod->tryToEnableForRegistration();
         $this->authenticationMethods['OpenID'] = $authenticationMethod;
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'myID',
                 $this->__('myID.net'),
                 $this->__('myID.net'),
                 true
         );
-        $authenticationMethod->enableForAuthentication();
-        $authenticationMethod->enableForRegistration();
+        $authenticationMethod->tryToEnableForAuthentication();
+        $authenticationMethod->tryToEnableForRegistration();
         $this->authenticationMethods['myID'] = $authenticationMethod;
 
-        $authenticationMethod = new Users_Helper_AuthenticationMethod(
+        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
                 'PIP',
                 $this->__('Symantec PIP'),
                 $this->__('Symantec (VeriSign) Personal Identity Portal'),
                 true
         );
-        $authenticationMethod->enableForAuthentication();
-        $authenticationMethod->enableForRegistration();
+        $authenticationMethod->tryToEnableForAuthentication();
+        $authenticationMethod->tryToEnableForRegistration();
         $this->authenticationMethods['PIP'] = $authenticationMethod;
     }
 
