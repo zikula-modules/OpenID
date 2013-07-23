@@ -10,7 +10,7 @@ Installing
 ==========
 
 #### Users ####
-Please only use the https://github.com/zikula-modules/OpenID/releases page to download this modules. Make sure
+Please only use the https://github.com/zikula-modules/OpenID/releases page to download this module. Make sure
 not to download the *Source code (zip)* but *OpenID.zip*. The source code does not contain all necessary external
 libraries.
 
