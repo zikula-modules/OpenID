@@ -34,17 +34,19 @@ class OpenID_Controller_User extends Zikula_AbstractController
      */
     public function view()
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->name.'::self', '::', ACCESS_COMMENT)) {
-            throw new Zikula_Exception_Forbidden();
-        }
+        $this->throwForbiddenUnless(SecurityUtil::checkPermission($this->name.'::self', '::', ACCESS_COMMENT));
 
         $openIds = ModUtil::apiFunc($this->name, 'user', 'getAll');
-        
-        $actions = array('count' => 1);
-        foreach ($openIds as $key => $openId) {
-            $actions[$openId['id']]['delete'] = array(
-                'url'   => ModUtil::url($this->name, 'user', 'removeOpenID', array('id' => $openId['id'])),
-            );
+
+        if ($this->allowOpenIdDelete()) {
+            $actions = array('count' => 1);
+            foreach ($openIds as $key => $openId) {
+                $actions[$openId['id']]['delete'] = array(
+                    'url'   => ModUtil::url($this->name, 'user', 'removeOpenID', array('id' => $openId['id'])),
+                );
+            }
+        } else {
+            $actions = array('count' => 0);
         }
 
         return $this->view->assign('openids', $openIds ? $openIds : array())
@@ -85,9 +87,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
      */
     public function newOpenID()
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            throw new Zikula_Exception_Forbidden();
-        }
+        $this->throwForbiddenUnless(SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT));
         
         $proceedToForm = true;
         $changeAuthenticatonMethod = false;
@@ -217,12 +217,12 @@ class OpenID_Controller_User extends Zikula_AbstractController
     
     public function removeOpenID()
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            throw new Zikula_Exception_Forbidden();
+        $this->throwForbiddenUnless(SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT));
+
+        if (!$this->allowOpenIdDelete()) {
+            return LogUtil::registerError($this->__("You cannot delete this open id, because you won't be able to login anymore."), null, ModUtil::url($this->name, 'user', 'view'));
         }
-        
-        $user = UserUtil::getVar('uid');
-        
+
         $proceedToForm = true;
         
         if ($this->request->isPost()) {
@@ -270,7 +270,6 @@ class OpenID_Controller_User extends Zikula_AbstractController
             if (!isset($id) || ((string)((int)$id) != $id)) {
                 throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
             }
-            $confirmed = false;
             
             try {
                 $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
@@ -319,6 +318,23 @@ class OpenID_Controller_User extends Zikula_AbstractController
         
         return $this->view->assign('returnUrl', $returnUrl)
                 ->fetch('User/legalnotice.tpl');
+    }
+
+    private function allowOpenIdDelete()
+    {
+        $openIds = ModUtil::apiFunc($this->name, 'user', 'getAll');
+
+        if (count($openIds) <= 1) {
+            // The user only has one openid. Check if he has a password.
+            $password = UserUtil::getVar('pass');
+            if ($password == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
+                // The user does not have a password set. If he now deletes his last openid, he won't
+                // be able to login anymore.
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

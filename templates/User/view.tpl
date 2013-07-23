@@ -7,7 +7,9 @@
         <tr>
             <th>{gt text="Service"}</th>
             <th>{gt text="ID"}</th>
+            {if $actions.count >= 1}
             <th class="z-center" colspan="{$actions.count|default:'1'}">{gt text="Actions"}</th>
+            {/if}
         </tr>
     </thead>
     <tbody>

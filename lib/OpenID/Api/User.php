@@ -82,9 +82,7 @@ class OpenID_Api_User extends Zikula_AbstractApi
      */
     public function getAll($args)
     {
-        if (!UserUtil::isLoggedIn() || !SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT)) {
-            throw new Zikula_Exception_Fatal();
-        }
+        $this->throwForbiddenUnless(SecurityUtil::checkPermission($this->getName().'::self', '::', ACCESS_COMMENT));
 
         $userMapList = false;
 
