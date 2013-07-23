@@ -7,38 +7,38 @@ Ready for Zikula 1.3.X.
 Please change the following lines (79-92) in `system/Users/lib/Users/Controller/FormData/RegistrationForm.php` from:
 ```php
 $this->addField(new Users_Controller_FormData_Field(
-                $this,
-                'passreminder',
-                false,
-                false,
-                $this->serviceManager))
-            ->setNullAllowed(false)
-            ->addValidator(new Users_Controller_FormData_Validator_StringType(
-                $this->serviceManager,
-                $this->__('The value must be a string.')))
-            ->addValidator(new Users_Controller_FormData_Validator_StringMinimumLength(
-                $this->serviceManager,
-                1,
-                $this->__('A password reminder is required, and cannot be left blank.')));
+        $this,
+        'passreminder',
+        false,
+        false,
+        $this->serviceManager))
+    ->setNullAllowed(false)
+    ->addValidator(new Users_Controller_FormData_Validator_StringType(
+        $this->serviceManager,
+        $this->__('The value must be a string.')))
+    ->addValidator(new Users_Controller_FormData_Validator_StringMinimumLength(
+        $this->serviceManager,
+        1,
+        $this->__('A password reminder is required, and cannot be left blank.')));
 ```
-to:
+to (add `/*` and `*/`):
 ```php
 $this->addField(new Users_Controller_FormData_Field(
-                $this,
-                'passreminder',
-                false,
-                false,
-                $this->serviceManager))
-            ->setNullAllowed(false)
-            ->addValidator(new Users_Controller_FormData_Validator_StringType(
-                $this->serviceManager,
-                $this->__('The value must be a string.')))/*
-            ->addValidator(new Users_Controller_FormData_Validator_StringMinimumLength(
-                $this->serviceManager,
-                1,
-                $this->__('A password reminder is required, and cannot be left blank.')))*/;
+        $this,
+        'passreminder',
+        false,
+        false,
+        $this->serviceManager))
+    ->setNullAllowed(false)
+    ->addValidator(new Users_Controller_FormData_Validator_StringType(
+        $this->serviceManager,
+        $this->__('The value must be a string.')))/*
+    ->addValidator(new Users_Controller_FormData_Validator_StringMinimumLength(
+        $this->serviceManager,
+        1,
+        $this->__('A password reminder is required, and cannot be left blank.')))*/;
 ```
-(*see https://github.com/zikula/core/issues/900 too*)
+( *see https://github.com/zikula/core/issues/900 too* )
 
 Installing
 ==========
