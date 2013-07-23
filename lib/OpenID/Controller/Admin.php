@@ -39,13 +39,15 @@ class OpenID_Controller_Admin extends Zikula_AbstractController
             throw new Zikula_Exception_Fatal($e->getMessage());
         }
 
-        foreach($users as $key => $user) {
-            $users[$key]['uname'] = UserUtil::getVar('uname', $user['uid']);
-            if (UserUtil::getVar('pass', $user['uid']) == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
-                // No password set. Allow setting of a random password.
-                $users[$key]['hasPassword'] = false;
-            } else {
-                $users[$key]['hasPassword'] = true;
+        if (!empty($users)) {
+            foreach($users as $key => $user) {
+                $users[$key]['uname'] = UserUtil::getVar('uname', $user['uid']);
+                if (UserUtil::getVar('pass', $user['uid']) == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
+                    // No password set. Allow setting of a random password.
+                    $users[$key]['hasPassword'] = false;
+                } else {
+                    $users[$key]['hasPassword'] = true;
+                }
             }
         }
 

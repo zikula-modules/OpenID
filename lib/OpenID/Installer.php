@@ -19,7 +19,7 @@ class OpenID_Installer extends Zikula_AbstractInstaller
 {
     /**
      * Initialise the template module.
-     * 
+     *
      * @return void
      */
     public function install()
@@ -33,12 +33,13 @@ class OpenID_Installer extends Zikula_AbstractInstaller
             }
             $this->registerError($message);
         }
-        
+
         // Persistent event handler registration
         EventUtil::registerPersistentModuleHandler('OpenID', 'user.account.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
         EventUtil::registerPersistentModuleHandler('OpenID', 'user.registration.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
 
-        $openIdProvider = ModUtil::apiFunc($this->name, 'user', 'getAllOpenIdProvider');
+        // Do not use an api function here: The api is not loaded yet.
+        $openIdProvider = OpenID_Util::getAllOpenIdProvider();
 
         foreach ($openIdProvider as $provider) {
             $nameArray[] = $provider->getProviderName();
@@ -59,7 +60,7 @@ class OpenID_Installer extends Zikula_AbstractInstaller
      * If the upgrade fails at some point, it returns the last upgraded version.
      *
      * @param string $oldVersion Version number string from which the upgrade begins.
-     * 
+     *
      * @return mixed True on success, last valid version string or false if fails.
      */
     public function upgrade($oldVersion)
@@ -72,14 +73,14 @@ class OpenID_Installer extends Zikula_AbstractInstaller
                 return $oldVersion;
                 break;
         }
-        
+
         // Update successful
         return true;
     }
 
     /**
      * Delete the OpenID module.
-     * 
+     *
      * @return boolean True if the module was successfully uninstalled; otherwise false.
      */
     public function uninstall()
@@ -107,7 +108,7 @@ class OpenID_Installer extends Zikula_AbstractInstaller
         }
 
         if ($error) {
-            $this->registerError($this->__("If you really want to uninstall this module, you have two possibilities: Go to this module's admin interface and either delete the users or set random passwords for them."));
+            $this->registerError($this->__("If you really want to uninstall this module, you have two possibilities: Either delete the users via the Users module or set random passwords for them via the OpenID admin interface"));
             return false;
         }
 
@@ -116,7 +117,7 @@ class OpenID_Installer extends Zikula_AbstractInstaller
             'openid_assoc',
             'openid_nonce',
         );
-        
+
         foreach ($tables as $tableName) {
             try {
                 DoctrineUtil::dropTable($tableName);
@@ -130,7 +131,7 @@ class OpenID_Installer extends Zikula_AbstractInstaller
         }
 
         $this->delVars();
-        
+
         // Persistent event handler unregistration
         EventUtil::unregisterPersistentModuleHandler('OpenID', 'user.account.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
         EventUtil::unregisterPersistentModuleHandler('OpenID', 'user.registration.delete', array('OpenID_Listener_UsersDelete', 'deleteAccountListener'));
