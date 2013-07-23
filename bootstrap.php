@@ -18,6 +18,7 @@ $autoloaderPath = dirname(__FILE__) . '/lib/vendor/autoload.php';
 if (file_exists($autoloaderPath)) {
     require($autoloaderPath);
 } else {
+    // It seems as if the user downloaded directly from source. Warn him about that.
     echo "The OpenID module could not find the required php-openid library.<br />";
     echo "If you are a developer, run \"composer update\" to add the library.<br />";
     echo "If you are a normal user, please don't download the source of this module from github. Please download a released version from ";

@@ -1,16 +1,27 @@
 {
     "name": "zikula-modules/openid",
     "description": "Provides OpenID authentication for Zikula user accounts.",
-    "require": {
-        "openid/php-openid": "dev-master"
-    },
-    "license": "LGPL",
+    "type": "zikula-module",
+    "license": "LGPL-3.0+",
     "authors": [
         {
             "name": "cmfcmf",
             "email": "cmfcmf.flach@gmail.com"
         }
     ],
+    "require": {
+        "openid/php-openid": "dev-master",
+        "php": ">5.3.3"
+    },
+    "autoload": {
+        "_readme": "This is not ready for autoloading yet.",
+        "_psr-0": { "Zikula\\OpenIDModule\\": "" }
+    },
+    "extra": {
+        "zikula": {
+            "class": "Zikula\\OpenIDModule\\ZikulaOpenIDModule"
+        }
+    },
     "config": {
         "vendor-dir": "lib/vendor"
     }

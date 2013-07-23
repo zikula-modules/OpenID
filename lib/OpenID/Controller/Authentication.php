@@ -49,7 +49,6 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
     public function getLoginFormFields(array $args)
     {
         // Parameter extraction and error checking
-        $errorMessage = false;
         $genericErrorMessage = $this->__('An internal error has occurred while selecting a method of logging in.');
         $showDetailedErrorMessage = (System::getVar('development', false) || SecurityUtil::checkPermission($this->name . '::debug', '::', ACCESS_ADMIN));
 
@@ -106,6 +105,8 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             return $this->view->assign('authentication_method', $args['method'])
                               ->fetch($templateName);
         }
+
+        return '';
     }
 
     /**
@@ -130,7 +131,7 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
     {
         // Parameter extraction and error checking
         if (!isset($args) || !is_array($args)) {
-            throw new Zikula_Exception_Fatal($this->__('The an invalid \'$args\' parameter was received.'));
+            throw new Zikula_Exception_Fatal($this->__('Error: An invalid \'$args\' parameter was received.'));
         }
 
         if (isset($args['form_type']) && is_string($args['form_type'])) {
@@ -148,26 +149,26 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
         }
         // End parameter extraction and error checking
 
-        if ($this->authenticationMethodIsEnabled($args['method'])) {
+        if ($this->authenticationMethodIsEnabled($method)) {
             $templateVars = array(
                 'authentication_method' => array(
                     'modname'   => $this->name,
-                    'method'    => $args['method'],
+                    'method'    => $method,
                 ),
                 'is_selected'           => isset($args['is_selected']) && $args['is_selected'],
-                'form_type'             => $args['form_type'],
+                'form_type'             => $formType,
                 'form_action'           => $args['form_action'],
             );
 
-            $templateName = "Auth/authenticationmethodselector/" . mb_strtolower("{$args['form_type']}/{$args['method']}.tpl");
+            $templateName = "Auth/authenticationmethodselector/" . mb_strtolower("{$formType}/{$method}.tpl");
             if (!$this->view->template_exists($templateName)) {
-                $templateName = "Auth/authenticationmethodselector/default/" . mb_strtolower("{$args['method']}.tpl");
+                $templateName = "Auth/authenticationmethodselector/default/" . mb_strtolower("{$method}.tpl");
                 if (!$this->view->template_exists($templateName)) {
-                    $templateName = "Auth/authenticationmethodselector/" . mb_strtolower("{$args['form_type']}/default.tpl");
+                    $templateName = "Auth/authenticationmethodselector/" . mb_strtolower("{$formType}/default.tpl");
                     if (!$this->view->template_exists($templateName)) {
                         $templateName = "Auth/authenticationmethodselector/default/default.tpl";
                         if (!$this->view->template_exists($templateName)) {
-                            throw new Zikula_Exception_Fatal($this->__f('An authentication method selector template was not found for method \'%1$s\' using form type \'%2$s\'.', array($args['method'], $args['form_type'])));
+                            throw new Zikula_Exception_Fatal($this->__f('An authentication method selector template was not found for method \'%1$s\' using form type \'%2$s\'.', array($args['method'], $formType)));
                         }
                     }
                 }
@@ -176,6 +177,8 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
             return $this->view->assign($templateVars)
                     ->fetch($templateName);
         }
+        
+        return '';
     }
 
     /**
@@ -214,10 +217,19 @@ class OpenID_Controller_Authentication extends Zikula_Controller_AbstractAuthent
      *
      * @return boolean True if the authentication information (the user's credentials) pass initial user-interface level validation;
      *                  otherwise false and an error status message is set.
+     *
+     * @throws Zikula_Exception_Fatal If $args are not valid.
      */
     public function validateAuthenticationInformation(array $args)
     {
+        if (!isset($args['authenticationMethod']) || !isset($args['authenticationInfo'])) {
+            throw new Zikula_Exception_Fatal($this->__('Error: An invalid \'$args\' parameter was received.'));
+        }
+
+        if (empty($args['authenticationInfo']['supplied_id'])) {
+            return false;
+        }
+
         return true;
-        // TODO: Implement validateAuthenticationInformation() method.
     }
 }

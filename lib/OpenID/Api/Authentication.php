@@ -338,8 +338,6 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 return false;
             }
         }
-
-        return false;
     }
 
     /**
@@ -386,7 +384,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             $reentrantURL = System::getCurrentUrl();
         }
 
-        $openidNamespace = $this->request->getGet()->get('openid_ns', null);
+        $openidNamespace = $this->request->query->get('openid_ns', null);
         $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_PHPOpenID_OpenIDStore(), new OpenID_PHPOpenID_SessionStore());
 
         if (!isset($openidNamespace) || empty($openidNamespace)) {
@@ -497,6 +495,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 return false;
             }
         }
+
+        return false;
     }
 
     /**
@@ -646,7 +646,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         if ($checkPasswordResult) {
             $authenticationInfo = $args['authentication_info'];
             $authenticationInfo['claimed_id'] = $checkPasswordResult['claimed_id'];
-            unset($checkPasswordResult['claimed_id']);
+            //unset($checkPasswordResult['claimed_id']);
             
             $checkPasswordResult = array(
                 'authentication_method' => $args['authentication_method'],
@@ -793,7 +793,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * 
      * @param array $args All parameters passed to this function.
      * 
-     * @return An array of account recovery information.
+     * @return array An array of account recovery information.
      * 
      * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, if 
      */

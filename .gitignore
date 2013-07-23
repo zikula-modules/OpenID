@@ -5,3 +5,4 @@
 /.settings
 /.buildpath
 /lib/vendor
+/composer.lock
