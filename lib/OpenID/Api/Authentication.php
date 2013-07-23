@@ -29,12 +29,12 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
     /**
      * Initialize the API instance with the list of valid authentication methods supported.
-     * 
+     *
      * @return void
      */
     protected function  postInitialize() {
         parent::postInitialize();
-        
+
         $sslEnabled = function_exists('openssl_open');
 
         $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
@@ -124,21 +124,20 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     public function isReentrant()
     {
-        
         return true;
     }
 
     /**
      * Indicate whether this module supports the indicated authentication method.
-     * 
+     *
      * Parameters passed in $args:
      * ---------------------------
      * string $args['method'] The name of the authentication method for which support is enquired.
      *
      * @param array $args All arguments passed to this function, see above.
-     * 
+     *
      * @return boolean True if the indicated authentication method is supported by this module; otherwise false.
-     * 
+     *
      * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
      */
     public function supportsAuthenticationMethod(array $args)
@@ -156,15 +155,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
     /**
      * Indicates whether a specified authentication method that is supported by this module is enabled for use.
-     * 
+     *
      * Parameters passed in $args:
      * ---------------------------
      * string $args['method'] The name of the authentication method for which support is enquired.
      *
      * @param array $args All arguments passed to this function, see above.
-     * 
+     *
      * @return boolean True if the indicated authentication method is enabled by this module; otherwise false.
-     * 
+     *
      * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
      */
     public function isEnabledForAuthentication(array $args)
@@ -184,16 +183,16 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
     /**
      * Retrieves an array of authentication methods defined by this module, possibly filtered by only those that are enabled.
-     * 
+     *
      * Parameters passed in $args:
      * ---------------------------
      * integer $args['filter'] Either {@link FILTER_ENABLED} (value 1), {@link FILTER_NONE} (value 0), or not present; allows the result to be filtered.
      *                              If this argument is FILTER_ENABLED, then only those authentication methods that are also enabled are returned.
      *
      * @param array $args All arguments passed to this function.
-     * 
+     *
      * @return array An array containing the authentication methods defined by this module, possibly filtered by only those that are enabled.
-     * 
+     *
      * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
      */
     public function getAuthenticationMethods(array $args = null)
@@ -241,13 +240,13 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
         return $authenticationMethods;
     }
-    
+
     /**
      * Registers a user account record or a user registration request with the authentication method.
-     * 
+     *
      * This is called during the user registration process to associate an authentication method provided by this authentication module
      * with a user (either a full user account, or a user's registration request).
-     * 
+     *
      * Parameters passed in the $args array:
      * -------------------------------------
      * array   'authentication_method' An array identifying the authentication method to associate with the user account or registration
@@ -260,10 +259,10 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *                                      authentication information.
      *
      * @param array $args All parameters passed to this function.
-     * 
-     * @return boolean True if the user account or registration request was successfully associated with the authentication method and 
+     *
+     * @return boolean True if the user account or registration request was successfully associated with the authentication method and
      *                      authentication information; otherwise false.
-     * 
+     *
      * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, or the user id, authentication method, or authentication information
      *                                      is invalid.
      */
@@ -272,29 +271,29 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         if (!isset($args['uid']) || empty($args['uid']) || !is_numeric($args['uid']) || ((string)((int)$args['uid']) != $args['uid'])) {
             throw new Zikula_Exception_Fatal($this->__('Invalid user id has been received.'));
         }
-        
+
         $uid = $args['uid'];
-        
+
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication information has been received.'));
         }
-        
+
         $authenticationInfo = $args['authentication_info'];
         if (!isset($authenticationInfo['claimed_id']) || empty($authenticationInfo['claimed_id'])) {
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication information has been received. A claimed ID was not specified.'));
         }
-        
+
         if (!isset($args['authentication_method']) || empty($args['authentication_method']) || !is_array($args['authentication_method'])) {
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received.'));
         }
-        
+
         $authenticationMethod = $args['authentication_method'];
-        if (!isset($authenticationMethod['modname']) || empty($authenticationMethod['modname']) 
+        if (!isset($authenticationMethod['modname']) || empty($authenticationMethod['modname'])
                 || !isset($authenticationMethod['method']) || empty($authenticationMethod['method'])
                 ) {
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received. Either an authentication module name or a method name was missing.'));
         }
-        
+
         $openidHelper = OpenID_Helper_Builder::buildInstance($this, $authenticationMethod['method'], $authenticationInfo);
         if ($openidHelper == false) {
             throw new Zikula_Exception_Fatal($this->__('The authentication method \'%1$s\' does not appear to be supported by the authentication module \'%2$s\'.', array($authenticationMethod['method'], $authenticationMethod['modname'])));
@@ -403,7 +402,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     $simpleRegistrationRequest = Auth_OpenID_SRegRequest::build(array('nickname', 'email'));
                     $openidAuthRequest->addExtension($simpleRegistrationRequest);
                 }
-                
+
                 // For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
                 // form to send a POST request to the server.
                 if ($openidAuthRequest->shouldSendRedirect()) {
@@ -478,7 +477,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $returnResult = array(
                     'claimed_id' => $response->getDisplayIdentifier(),
                 );
-                
+
                 if ($forRegistration) {
                     $simpleRegistrationResponse = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
                     if ($simpleRegistrationResponse) {
@@ -540,7 +539,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function checkPassword(array $args)
     {
         $passwordAuthenticates = false;
-        
+
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
@@ -560,18 +559,18 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             // TODO - Maybe we should error out, because there is no guarantee that the current URL is reentrant.
             $reentrantURL = System::getCurrentUrl();
         }
-        
+
         $checkPasswordResult = $this->internalCheckPassword($args['authentication_method'], $args['authentication_info'], $reentrantURL, false);
-        
+
         if ($checkPasswordResult) {
             $passwordAuthenticates = true;
-            
+
             // Set a session variable, if necessary, with the claimed id.
             if (isset($args['set_claimed_id']) && is_string($args['set_claimed_id']) && !empty($args['set_claimed_id'])) {
                 $this->request->getSession()->set('claimed_id', $checkPasswordResult['claimed_id'], $args['set_claimed_id']);
             }
         }
-            
+
         return $passwordAuthenticates;
     }
 
@@ -605,7 +604,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * This function differs from login()  in that no attempt is made to match the authentication info with and map to a
      * Zikula user account. It does not return a Zikula user id (uid). In addition this function makes no attempt to
      * perform any login-related processes on the authenticating system.
-     * 
+     *
      * Parameters passed in the $args array:
      * -------------------------------------
      *
@@ -620,7 +619,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function checkPasswordForRegistration(array $args)
     {
         $checkPasswordResult = false;
-        
+
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
@@ -640,21 +639,21 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             // TODO - Maybe we should error out, because there is no guarantee that the current URL is reentrant.
             $reentrantURL = System::getCurrentUrl();
         }
-        
+
         $checkPasswordResult = $this->internalCheckPassword($args['authentication_method'], $args['authentication_info'], $reentrantURL, true);
-        
+
         if ($checkPasswordResult) {
             $authenticationInfo = $args['authentication_info'];
             $authenticationInfo['claimed_id'] = $checkPasswordResult['claimed_id'];
             //unset($checkPasswordResult['claimed_id']);
-            
+
             $checkPasswordResult = array(
                 'authentication_method' => $args['authentication_method'],
                 'authentication_info'   => $authenticationInfo,
                 'registration_info'     => $checkPasswordResult,
             );
        }
-            
+
         return $checkPasswordResult;
     }
 
@@ -667,7 +666,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      * ids (uids). Returning the wrong uid for a given authentication info will potentially expose a user's account to
      * unauthorized access. Custom authmodules must also ensure that they keep their mapping table in sync with
      * the user's account.
-     * 
+     *
      * Parameters passed in the $args array:
      * -------------------------------------
      * array   authentication_info The authentication information uniquely associated with a user. It should contain a 'claimed_id'.
@@ -682,11 +681,11 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function getUidForAuthenticationInfo(array $args)
     {
         $claimedUid = false;
-        
+
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
-        
+
         if (isset($args['authentication_info']['claimed_id'])) {
             try {
                 $userMapTable = Doctrine_Core::getTable('OpenID_Model_UserMap');
@@ -698,7 +697,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 // TODO - Return false (by default); but should we return an exception?
             }
         }
-        
+
         return $claimedUid;
     }
 
@@ -728,7 +727,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     public function authenticateUser(array $args)
     {
         $authenticatedUid = false;
-        
+
         if (!isset($args['authentication_info']) || empty($args['authentication_info']) || !is_array($args['authentication_info'])) {
             throw new Zikula_Exception_Fatal($this->__('An invalid set of authentication information was received.'));
         }
@@ -758,25 +757,25 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
         return $authenticatedUid;
     }
-    
+
     /**
      * Retrieve the account recovery information for the specified user.
-     * 
+     *
      * The array returned by this function should be an empty array (not null) if the specified user does not have any
      * authentication methods registered with the authentication module that are enabled for log-in.
-     * 
+     *
      * If the specified user does have one or more authentication methods, then the array should contain one or more elements
      * indexed numerically. Each element should be an associative array containing the following:
-     * 
+     *
      * - 'modname' The authentication module name.
      * - 'short_description' A brief (a few words) description or name of the authentication method.
      * - 'long_description' A longer description or name of the authentication method.
      * - 'uname' The user name _equivalent_ for the authentication method (e.g., the claimed OpenID).
      * - 'link' If the authentication method is for an external service, then a link to the user's account on that service, or a general link to the service,
      *            otherwise, an empty string (not null).
-     * 
+     *
      * For example:
-     * 
+     *
      * <code>
      * $accountRecoveryInfo[] = array(
      *     'modname'           => $this->name,
@@ -786,23 +785,23 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      *     'link'              => '',
      * )
      * </code>
-     * 
+     *
      * Parameters passed in the $arg array:
      * ------------------------------------
      * numeric 'uid' The user id of the user for which account recovery information should be retrieved.
-     * 
+     *
      * @param array $args All parameters passed to this function.
-     * 
+     *
      * @return array An array of account recovery information.
-     * 
-     * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, if 
+     *
+     * @throws Zikula_Exception_Fatal Thrown if the arguments array is invalid, if
      */
     public function getAccountRecoveryInfoForUid(array $args)
     {
         if (!isset($args) || empty($args)) {
             throw new Zikula_Exception_Fatal($this->__('An invalid parameter array was received.'));
         }
-        
+
         $uid = isset($args['uid']) ? $args['uid'] : false;
         if (!isset($uid) || !is_numeric($uid) || ((string)((int)$uid) != $uid)) {
             throw new Zikula_Exception_Fatal($this->__('An invalid user id was received.'));
@@ -818,7 +817,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             }
             throw new Zikula_Exception_Fatal($message);
         }
-        
+
         $lostUserNames = array();
         if (!empty($userMapList)) {
             foreach ($userMapList as $userMap) {
@@ -836,7 +835,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 }
             }
         }
-        
+
         return $lostUserNames;
     }
 }
