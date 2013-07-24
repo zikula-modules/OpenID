@@ -50,6 +50,14 @@ class OpenID_Form_Handler_Config extends Zikula_Form_AbstractHandler
             }
 
             $values = $view->getValues();
+
+            foreach ($values['registrationProvider'] as $registrationProvider) {
+                if (!in_array($registrationProvider, $values['loginProvider'])) {
+                    // If a provider is enabled for registration, he must be enabled for login too.
+                    $values['loginProvider'][] = $registrationProvider;
+                }
+            }
+
             $this->setVar('loginProvider', $values['loginProvider']);
             $this->setVar('registrationProvider', $values['registrationProvider']);
 

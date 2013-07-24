@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright Zikula Foundation 2011 - Zikula Application Framework
+ * Copyright Zikula Foundation 2013 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
@@ -15,7 +15,7 @@
 /**
  * A helper or utility class that provides information for a Google Account OpenID in expected formats for the protocol.
  */
-class OpenID_Helper_Google extends OpenID_Helper_OpenID
+class OpenID_OpenIDProvider_Google extends OpenID_OpenIDProvider_AbstractProvider
 {
     /**
      * The OpenID server endpoint used by Google for all OpenID authentication.
@@ -36,7 +36,7 @@ class OpenID_Helper_Google extends OpenID_Helper_OpenID
      * Constructs and returns the user's claimed OpenID appropriate for human-readable on-screen display.
      *
      * @param string $claimedId The normalized, authenticated claimed OpenID for the user.
-     * 
+     *
      * @return string The claimed OpenID, adjusted for display purposes--in this case formatted as an OpenID URL.
      */
     public function getDisplayName($claimedID)
@@ -44,13 +44,23 @@ class OpenID_Helper_Google extends OpenID_Helper_OpenID
         return $this->__('(Google does not return a displayable name for your account)');
     }
 
-    public function getProviderName()
-    {
-        return 'Google';
-    }
-
     public function getProviderDisplayName()
     {
-        return 'Google';
+        return $this->__('Google');
+    }
+
+    public function getShortDescription()
+    {
+        return $this->__('Google Account');
+    }
+
+    public function getLongDescription()
+    {
+        return $this->__('Google Account');
+    }
+
+    public function needsSsl()
+    {
+        return true;
     }
 }

@@ -35,84 +35,28 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     protected function  postInitialize() {
         parent::postInitialize();
 
+        $openIdProvider = OpenID_Util::getAllOpenIdProvider();
         $sslEnabled = function_exists('openssl_open');
 
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
+        foreach ($openIdProvider as $provider) {
+            $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
                 $this->name,
-                'Google',
-                $this->__('Google Account'),
-                $this->__('Google Account'),
+                $provider->getProviderName(),
+                $provider->getShortDescription(),
+                $provider->getLongDescription(),
                 true
-        );
-        // Google requires an SSL connection.
-        if ($sslEnabled) {
-            $authenticationMethod->tryToEnableForAuthentication();
-            $authenticationMethod->tryToEnableForRegistration();
-        } else {
-            $authenticationMethod->disableForAuthentication();
-            $authenticationMethod->disableForRegistration();
+            );
+            $this->authenticationMethods[$provider->getProviderName()] = $authenticationMethod;
+
+            if ($provider->needsSsl() && !$sslEnabled) {
+                $authenticationMethod->disableForAuthentication();
+                $authenticationMethod->disableForRegistration();
+            } else {
+                // Enabled method if modvar allows it.
+                $authenticationMethod->tryToEnableForAuthentication();
+                $authenticationMethod->tryToEnableForRegistration();
+            }
         }
-        $this->authenticationMethods['Google'] = $authenticationMethod;
-
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
-                $this->name,
-                'Yahoo',
-                $this->__('Yahoo!'),
-                $this->__('Yahoo!'),
-                true
-        );
-        if ($sslEnabled) {
-            $authenticationMethod->tryToEnableForAuthentication();
-            $authenticationMethod->tryToEnableForRegistration();
-        } else {
-            $authenticationMethod->disableForAuthentication();
-            $authenticationMethod->disableForRegistration();
-        }
-        $this->authenticationMethods['Yahoo'] = $authenticationMethod;
-
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
-                $this->name,
-                'myOpenID',
-                $this->__('myOpenID'),
-                $this->__('myOpenID'),
-                true
-        );
-        $authenticationMethod->tryToEnableForAuthentication();
-        $authenticationMethod->tryToEnableForRegistration();
-        $this->authenticationMethods['myOpenID'] = $authenticationMethod;
-
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
-                $this->name,
-                'OpenID',
-                $this->__('OpenID'),
-                $this->__('OpenID'),
-                true
-        );
-        $authenticationMethod->tryToEnableForAuthentication();
-        $authenticationMethod->tryToEnableForRegistration();
-        $this->authenticationMethods['OpenID'] = $authenticationMethod;
-
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
-                $this->name,
-                'myID',
-                $this->__('myID.net'),
-                $this->__('myID.net'),
-                true
-        );
-        $authenticationMethod->tryToEnableForAuthentication();
-        $authenticationMethod->tryToEnableForRegistration();
-        $this->authenticationMethods['myID'] = $authenticationMethod;
-
-        $authenticationMethod = new OpenID_Helper_AuthenticationMethod(
-                $this->name,
-                'PIP',
-                $this->__('Symantec PIP'),
-                $this->__('Symantec (VeriSign) Personal Identity Portal'),
-                true
-        );
-        $authenticationMethod->tryToEnableForAuthentication();
-        $authenticationMethod->tryToEnableForRegistration();
-        $this->authenticationMethods['PIP'] = $authenticationMethod;
     }
 
     /**
@@ -294,7 +238,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('Invalid authentication method has been received. Either an authentication module name or a method name was missing.'));
         }
 
-        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $authenticationMethod['method'], $authenticationInfo);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
         if ($openidHelper == false) {
             throw new Zikula_Exception_Fatal($this->__('The authentication method \'%1$s\' does not appear to be supported by the authentication module \'%2$s\'.', array($authenticationMethod['method'], $authenticationMethod['modname'])));
         }
@@ -373,7 +317,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     protected function internalCheckPassword(array $authenticationMethod, array $authenticationInfo, $reentrantURL = null, $forRegistration = false)
     {
-        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $authenticationMethod['method'], $authenticationInfo);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
@@ -548,7 +492,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
         }
 
-        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }
@@ -628,7 +572,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('An invalid authentication method identifier was recieved.'));
         }
 
-        $openidHelper = OpenID_Helper_Builder::buildInstance($this, $args['authentication_method']['method'], $args['authentication_info']);
+        $openidHelper = OpenID_Helper_Builder::buildInstance($args['authentication_method']['method'], $args['authentication_info']);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
         }

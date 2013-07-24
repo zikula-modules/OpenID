@@ -15,32 +15,9 @@
 /**
  * A helper or utility class that provides information for an OpenID provider in expected formats for the protocol.
  */
-class OpenID_Helper_OpenID extends Zikula_AbstractHelper
+
+class OpenID_OpenIDProvider_OpenID extends OpenID_OpenIDProvider_AbstractProvider
 {
-    /**
-     * The OpenID supplied id, as an OpenID Server endpoint.
-     *
-     * @var string
-     */
-    protected $suppliedId;
-
-    /**
-     * Builds a new instance of this class, extracting the supplied OpenID from the $authenticationInfo parameter.
-     *
-     * @param object $helpee             An instance of the class that this helper is helping; an instance of Zikula_AbstractBase, Zikula_AbstractEventHandler, 
-     *                                      Zikula_Hook_AbstractHandler, Zikula_AbstractPlugin, Zikula_ServiceManager, or Zikula_EventManager.
-     * @param array  $authenticationInfo An array containing the authentication information, and specifically, the OpenID supplied by the user
-     *                                      in the 'supplied_id' element which is used to initialize this instance.
-     */
-    public function __construct($helpee, array $authenticationInfo)
-    {
-        parent::__construct($helpee);
-        
-        if (isset($authenticationInfo)) {
-            $this->suppliedId = $authenticationInfo['supplied_id'];
-        }
-    }
-
     /**
      * Returns the supplied id.
      *
@@ -55,7 +32,7 @@ class OpenID_Helper_OpenID extends Zikula_AbstractHelper
      * Constructs and returns the user's claimed OpenID appropriate for human-readable on-screen display.
      *
      * @param string $claimedId The normalized, authenticated claimed OpenID for the user.
-     * 
+     *
      * @return string The claimed OpenID, adjusted for display purposes--in this case formatted as an OpenID URL.
      */
     public function getDisplayName($claimedId)
@@ -99,15 +76,23 @@ class OpenID_Helper_OpenID extends Zikula_AbstractHelper
         return $displayName;
     }
 
-    public function getProviderName()
-    {
-        $parts = explode('_', get_class($this));
-
-        return $parts[2];
-    }
-
     public function getProviderDisplayName()
     {
-        return $this->getProviderName();
+        return $this->__('Any OpenID');
+    }
+
+    public function getShortDescription()
+    {
+        return $this->__('Any OpenID Account');
+    }
+
+    public function getLongDescription()
+    {
+        return $this->__('Any OpenID Account');
+    }
+
+    public function needsSsl()
+    {
+        return false;
     }
 }

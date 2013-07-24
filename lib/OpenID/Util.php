@@ -20,19 +20,17 @@ class OpenID_Util
     {
         $finder = new Finder();
         $finder->files()
-                ->in(dirname(__FILE__) . "/Helper")
+                ->in(dirname(__FILE__) . "/OpenIDProvider")
                 ->name('*.php')
-                ->notName('OpenID.php')
-                ->notName('Builder.php')
-                ->notName('AuthenticationMethod.php')
+                ->notName('AbstractProvider.php')
                 ->depth('== 0')
                 ->sortByName();
 
         $provider = array();
 
         foreach ($finder as $file) {
-            $classname =  'OpenID_Helper_' . substr($file->getRelativePathname(), 0, -4);
-            $provider[] = new $classname(new stdClass());
+            $classname =  'OpenID_OpenIDProvider_' . substr($file->getRelativePathname(), 0, -4);
+            $provider[] = new $classname();
         }
 
         return $provider;

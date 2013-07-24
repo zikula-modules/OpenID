@@ -20,7 +20,7 @@ class OpenID_Helper_AuthenticationMethod extends Users_Helper_AuthenticationMeth
         $loginProvider = ModUtil::getVar(OpenID_Constant::MODNAME, 'loginProvider');
 
         if (!is_array($loginProvider)) {
-            $loginProvider = arraY();
+            $loginProvider = array();
         }
         if (in_array($this->method, $loginProvider)) {
             $this->enabledForAuthentication;
@@ -34,7 +34,7 @@ class OpenID_Helper_AuthenticationMethod extends Users_Helper_AuthenticationMeth
         $registrationProvider = ModUtil::getVar(OpenID_Constant::MODNAME, 'registrationProvider');
 
         if (!is_array($registrationProvider)) {
-            $registrationProvider = arraY();
+            $registrationProvider = array();
         }
         if (in_array($this->method, $registrationProvider)) {
             $this->enableForRegistration();
