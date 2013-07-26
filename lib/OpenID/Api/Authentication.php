@@ -331,7 +331,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_PHPOpenID_OpenIDStore(), new OpenID_PHPOpenID_SessionStore());
 
         if (!isset($openidNamespace) || empty($openidNamespace)) {
-            // We are NOT returing from a previous redirect to the authorizing provider
+            // We are NOT returning from a previous redirect to the authorizing provider
 
             // Save the reentrantURL for later use
             SessionUtil::requireSession();
@@ -638,8 +638,13 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                     $claimedUid = $userMap['uid'];
                 }
             } catch (Exception $e) {
-                // TODO - Return false (by default); but should we return an exception?
+                // Something went wrong.
+                return false;
             }
+        }
+
+        if ($claimedUid === false) {
+            // TODO Create Zikula user account, which is not possible ATM.
         }
 
         return $claimedUid;

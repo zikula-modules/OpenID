@@ -13,7 +13,7 @@
  */
 
 /**
- * Converts a boolean value to a picture.
+ * Returns the display name of a login method.
  */
 function smarty_modifier_openid_getdisplayname($method)
 {

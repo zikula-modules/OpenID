@@ -20,8 +20,8 @@ OpenID.LoginBlock =
         if ($('authentication_select_method_form_openid_openid') != null) {
             $('authentication_select_method_form_openid_openid').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_openid'); });
         }
-        if ($('authentication_select_method_form_openid_pip') != null) {
-            $('authentication_select_method_form_openid_pip').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_pip'); });
+        if ($('authentication_select_method_form_openid_verisignpip') != null) {
+            $('authentication_select_method_form_openid_verisignpip').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_verisignpip'); });
         }
         if ($('authentication_select_method_form_openid_yahoo') != null) {
             $('authentication_select_method_form_openid_yahoo').observe('submit', function(event) { Zikula.Users.LoginBlock.onSubmitSelectAuthenticationMethod(event, 'authentication_select_method_form_openid_yahoo'); });

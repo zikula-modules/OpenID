@@ -8,6 +8,9 @@ OpenID.Login =
 {
     init: function()
     {
+        /*
+        Disabled, see https://github.com/zikula/core/issues/907.
+
         if ($('users_login_select_authentication_form_openid_openid') != null) {
             $('users_login_select_authentication_form_openid_openid').observe('submit', function(event) { Zikula.Users.Login.onSubmitSelectAuthenticationMethod(event, 'users_login_select_authentication_form_openid_openid'); });
         }
@@ -17,6 +20,7 @@ OpenID.Login =
         if ($('users_login_select_authentication_form_openid_pip') != null) {
             $('users_login_select_authentication_form_openid_pip').observe('submit', function(event) { Zikula.Users.Login.onSubmitSelectAuthenticationMethod(event, 'users_login_select_authentication_form_openid_pip'); });
         }
+        */
     }
 
 }
