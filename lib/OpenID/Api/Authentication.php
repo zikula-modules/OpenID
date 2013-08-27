@@ -636,9 +636,14 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $userMap = $userMapTable->getByClaimedId($args['authentication_info']['claimed_id']);
                 if ($userMap) {
                     $claimedUid = $userMap['uid'];
+                } else {
+                    return false;
                 }
             } catch (Exception $e) {
                 // Something went wrong.
+                if (System::isDevelopmentMode()) {
+                    LogUtil::registerError($e->getMessage());
+                }
                 return false;
             }
         }
@@ -701,6 +706,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
             if (!$authenticatedUid) {
                 $this->registerError($this->__('Sorry! The information you provided was incorrect. Please check the log-in service you selected and the id you entered, and make sure they match the information associated with your account on this site.'));
+                $this->registerError($this->__('If you want to create a new account, click "New account" above. If you already have an user account, please go to "My account" and associate your OpenID with that account.'));
             }
         }
 
@@ -777,8 +783,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                             'modname'           => $this->name,
                             'short_description' => $authenticationMethod->getShortDescription(),
                             'long_description'  => $authenticationMethod->getLongDescription(),
-                            'uname'             => $userMap['display_id'],
-                            'link'              => $userMap['claimed_id'],
+                            'uname'             => $userMap['claimed_id'],
+                            'link'              => '',
                         );
                     }
                 }
