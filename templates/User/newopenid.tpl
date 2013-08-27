@@ -1,4 +1,8 @@
-{pageaddvar name='stylesheet' value='system/Users/style/style.css'}
+{if version_compare($coredata.version_num, '1.3.5', '<=')}
+    {pageaddvar name='stylesheet' value='system/Users/style/style.css'}
+{else}
+    {pageaddvar name='stylesheet' value='system/Zikula/Module/UsersModule/Resources/public/css/style.css'}
+{/if}
 {gt text="Add an OpenID" assign='templatetitle'}
 {pagesetvar name='title' value=$templatetitle}
 {insert name='csrftoken' assign='csrftoken'}
