@@ -203,4 +203,19 @@ class OpenID_Api_User extends Zikula_AbstractApi
     {
         return OpenID_Util::getAllOpenIdProvider();
     }
+
+    /**
+     * Checks if there is at least one OpenID provider active.
+     *
+     * @return bool True if there is at least one OpenID provider active.
+     */
+    public function openIdEnabled($args)
+    {
+        $loginProvider = $this->getVar('loginProvider');
+
+        if (!empty($loginProvider)) {
+            return true;
+        }
+        return false;
+    }
 }

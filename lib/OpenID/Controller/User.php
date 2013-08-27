@@ -17,6 +17,13 @@
  */
 class OpenID_Controller_User extends Zikula_AbstractController
 {
+    public function postInitialize()
+    {
+        if (!$this->openIDEnabled()) {
+            return LogUtil::registerError($this->__('OpenID was deactivated by the site administrator.'), 404, ModUtil::url('Users', 'user', 'main'));
+        }
+    }
+
     /**
      * Redirects the user to the main OpenID module function; in this case, the view function.
      */
@@ -153,11 +160,10 @@ class OpenID_Controller_User extends Zikula_AbstractController
                                 'authentication_method' => $selectedAuthenticationMethod,
                             ));
 
-                            if (!$saved && !LogUtil::hasErrors()) {
+                            if (!$saved) {
                                 $this->registerError($this->__('There was a problem saving your new OpenID.'));
-                            } else {
-                                $proceedToForm = false;
                             }
+                            $proceedToForm = false;
                         } else {
                             $this->registerError($this->__('There was an internal error processing your request to save a new OpenID.'));
                             $proceedToForm = false;
@@ -171,9 +177,11 @@ class OpenID_Controller_User extends Zikula_AbstractController
             }
         } elseif ($this->request->isGet()) {
             $this->request->getSession()->clearNamespace('OpenID_Controller_User_newOpenID');
-            
+
+            $loginProvider = $this->getVar('loginProvider');
+
             $selectedAuthenticationMethod['modname'] = $this->name;
-            $selectedAuthenticationMethod['method'] = $this->request->query->get('authentication_method', 'OpenID');
+            $selectedAuthenticationMethod['method'] = $this->request->query->get('authentication_method', $loginProvider[0]);
             $authenticationInfo = array();
         } else {
             throw new Zikula_Exception_Forbidden();
@@ -320,6 +328,11 @@ class OpenID_Controller_User extends Zikula_AbstractController
                 ->fetch('User/legalnotice.tpl');
     }
 
+    /**
+     * Checks if it is allowed to delete an OpenID.
+     *
+     * @return bool True if it is allowed.
+     */
     private function allowOpenIdDelete()
     {
         $openIds = ModUtil::apiFunc($this->name, 'user', 'getAll');
@@ -337,4 +350,13 @@ class OpenID_Controller_User extends Zikula_AbstractController
         return true;
     }
 
+    /**
+     * Checks if there is at least one OpenID provider active.
+     *
+     * @return bool True if there is at least one OpenID provider active.
+     */
+    private function openIdEnabled()
+    {
+        return ModUtil::apiFunc($this->name, 'user', 'openIdEnabled');
+    }
 }
