@@ -29,7 +29,7 @@ abstract class OpenID_OpenIDProvider_AbstractProvider implements Zikula_Translat
      * @param array  $authenticationInfo An array containing the authentication information, and specifically, the OpenID supplied by the user
      *                                      in the 'supplied_id' element which is used to initialize this instance.
      */
-    public final function __construct(array $authenticationInfo)
+    public final function __construct(array $authenticationInfo = null)
     {
         $this->domain = ZLanguage::getModuleDomain(OpenID_Constant::MODNAME);
 
