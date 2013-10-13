@@ -17,7 +17,8 @@
  */
 class OpenID_Api_Admin extends Zikula_AbstractApi
 {
-    public function getlinks() {
+    public function getlinks()
+    {
         $links = array();
 
         if (SecurityUtil::checkPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -35,5 +36,14 @@ class OpenID_Api_Admin extends Zikula_AbstractApi
         }
 
         return $links;
+    }
+
+    public function hashServerUrl($args)
+    {
+        if (!isset($args['serverUrl'])) {
+            throw new InvalidArgumentException('Parameter $serverUrl must be set.');
+        }
+
+        return hash('sha256', $args['serverUrl']);
     }
 }

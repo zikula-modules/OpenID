@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright Zikula Foundation 2011 - Zikula Application Framework
+ * Copyright Zikula Foundation 2013 - Zikula Application Framework
  *
  * This work is contributed to the Zikula Foundation under one or more
  * Contributor Agreements and licensed to You under the following license:
@@ -13,25 +13,24 @@
  */
 
 /**
- * Installs or upgrades the OpenID module.
+ * Installs, uninstalls or upgrades the OpenID module.
  */
 class OpenID_Installer extends Zikula_AbstractInstaller
 {
     /**
      * Initialise the template module.
      *
-     * @return void
+     * @return boolean
      */
     public function install()
     {
         try {
-            DoctrineUtil::createTablesFromModels('OpenID');
-        } catch (Doctrine_Exception $e) {
-            $message = $this->__f('An error was encountered while installing the %1$s module.', array($this->getName()));
+            DoctrineHelper::createSchema($this->entityManager, array('OpenID_Entity_UserMap', 'OpenID_Entity_Nonce', 'OpenID_Entity_Assoc'));
+        } catch (Exception $e) {
             if (System::isDevelopmentMode()) {
-                $message .= ' ' . $this->__f('The error occurred while creating the tables. The Doctrine Exception message was: %1$s', array($e->getMessage()));
+                LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
             }
-            $this->registerError($message);
+            return LogUtil::registerError($this->__f('An error was encountered while creating the tables for the %s module.', array($this->getName())));
         }
 
         // Persistent event handler registration
@@ -41,6 +40,8 @@ class OpenID_Installer extends Zikula_AbstractInstaller
         // Do not use an api function here: The api is not loaded yet.
         $openIdProvider = OpenID_Util::getAllOpenIdProvider();
 
+        $nameArray = array();
+        /** @var OpenID_OpenIDProvider_AbstractProvider $provider */
         foreach ($openIdProvider as $provider) {
             $nameArray[] = $provider->getProviderName();
         }
@@ -86,48 +87,40 @@ class OpenID_Installer extends Zikula_AbstractInstaller
     public function uninstall()
     {
         try {
-            $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                ->getAll(Doctrine_Core::HYDRATE_ARRAY);
+            $userMapList = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findAll();
         } catch (Exception $e) {
             $message = $this->__f('A database error was encountered while uninstalling the %1$s module.', array($this->getName()));
             if (System::isDevelopmentMode()) {
                 $message .= ' ' . $this->__f('The Doctrine Exception message was: %1$s', array($e->getMessage()));
             }
-            $this->registerError($message);
+            LogUtil::registerError($message);
             return false;
         }
 
         $error = false;
-        foreach ($userMapList as $user) {
-            $uid = $user['uid'];
-            if (UserUtil::getVar('pass', $uid) == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
-                // This user has no password. He won't be able to login anymore.
-                $error = true;
-                $this->registerError($this->__f('The user "%s" would not be able to login anymore if you uninstall this module.', UserUtil::getVar('uname', $uid)));
+        if (!empty($userMapList)) {
+            foreach ($userMapList as $user) {
+                $uid = $user['uid'];
+                if (UserUtil::getVar('pass', $uid) == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
+                    // This user has no password. He won't be able to login anymore.
+                    $error = true;
+                    LogUtil::registerError($this->__f('The user "%s" would not be able to login anymore if you uninstall this module.', UserUtil::getVar('uname', $uid)));
+                }
             }
         }
 
         if ($error) {
-            $this->registerError($this->__("If you really want to uninstall this module, you have two possibilities: Either delete the users via the Users module or set random passwords for them via the OpenID admin interface"));
+            LogUtil::registerError($this->__("If you really want to uninstall this module, you have two possibilities: Either delete the users via the Users module or set random passwords for them via the OpenID admin interface"));
             return false;
         }
 
-        $tables = array(
-            'openid_usermap',
-            'openid_assoc',
-            'openid_nonce',
-        );
-
-        foreach ($tables as $tableName) {
-            try {
-                DoctrineUtil::dropTable($tableName);
-            } catch (Doctrine_Exception $e) {
-                $message = $this->__f('A database error was encountered while uninstalling the %1$s module.', array($this->getName()));
-                if (System::isDevelopmentMode()) {
-                    $message .= ' ' . $this->__f('The error occurred while dropping the %1$s table. The Doctrine Exception message was: %2$s', array($tableName, $e->getMessage()));
-                }
-                $this->registerError($message);
+        try {
+            DoctrineHelper::dropSchema($this->entityManager, array('OpenID_Entity_UserMap', 'OpenID_Entity_Nonce', 'OpenID_Entity_Assoc'));
+        } catch (Exception $e) {
+            if (System::isDevelopmentMode()) {
+                LogUtil::registerError($this->__('Doctrine Exception: ') . $e->getMessage());
             }
+            return LogUtil::registerError($this->__f('An error was encountered while dropping the tables for the %s module.', array($this->getName())));
         }
 
         $this->delVars();

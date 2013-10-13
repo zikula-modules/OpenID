@@ -18,11 +18,17 @@
  */
 class OpenID_Controller_Admin extends Zikula_AbstractController
 {
+    /**
+     * Disable caching in admin area.
+     */
     public function postInitialize()
     {
         $this->view->setCaching(Zikula_View::CACHE_DISABLED);
     }
 
+    /**
+     * Redirect to modifyConfig action.
+     */
     public function main()
     {
         $this->redirect(ModUtil::url($this->name, 'admin', 'modifyconfig'));
@@ -32,24 +38,7 @@ class OpenID_Controller_Admin extends Zikula_AbstractController
     {
         $this->throwForbiddenUnless(SecurityUtil::checkPermission('OpenID::', '::', ACCESS_ADMIN));
 
-        try {
-            $users = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                ->getAll(Doctrine_Core::HYDRATE_ARRAY);
-        } catch (Exception $e) {
-            throw new Zikula_Exception_Fatal($e->getMessage());
-        }
-
-        if (!empty($users)) {
-            foreach($users as $key => $user) {
-                $users[$key]['uname'] = UserUtil::getVar('uname', $user['uid']);
-                if (UserUtil::getVar('pass', $user['uid']) == Users_Constant::PWD_NO_USERS_AUTHENTICATION) {
-                    // No password set. Allow setting of a random password.
-                    $users[$key]['hasPassword'] = false;
-                } else {
-                    $users[$key]['hasPassword'] = true;
-                }
-            }
-        }
+        $users = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findAll();
 
         $openIdProvider = ModUtil::apiFunc($this->name, 'user', 'getAllOpenIdProvider');
 

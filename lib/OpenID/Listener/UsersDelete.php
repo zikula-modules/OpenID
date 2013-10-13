@@ -30,8 +30,16 @@ class OpenID_Listener_UsersDelete
         $userObj = $event->getSubject();
 
         if (isset($userObj) && isset($userObj['uid']) && !empty($userObj['uid']) && ($userObj['uid'] > 2)) {
-            $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                ->removeByUserId($userObj['uid']);
+            $sm = ServiceUtil::getManager();
+
+            /** @var Doctrine\ORM\EntityManager $em */
+            $em = $sm->get('doctrine.entitymanager');
+
+            $qb = $em->createQueryBuilder();
+            $qb->delete('OpenID_Entity_UserMap', 'u');
+            $qb->andWhere($qb->expr()->eq('u.uid', ':uid'));
+            $qb->setParameter(':uid',  $userObj['uid']);
+            $qb->getQuery()->execute();
         }
     }
 }

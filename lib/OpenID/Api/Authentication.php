@@ -268,14 +268,15 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             return false;
         } else {
             try {
-                $userMap = new OpenID_Model_UserMap();
-                $userMap->fromArray(array(
+                $userMap = new OpenID_Entity_UserMap();
+                $userMap->merge(array(
                     'uid'                   => $uid,
                     'authentication_method' => $authenticationMethod['method'],
                     'claimed_id'            => $claimedID,
                     'display_id'            => $openidHelper->getDisplayName($claimedID),
                 ));
-                $userMap->save();
+                $this->entityManager->persist($userMap);
+                $this->entityManager->flush();
                 return true;
             } catch (Exception $e) {
                 return false;
@@ -632,8 +633,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
 
         if (isset($args['authentication_info']['claimed_id'])) {
             try {
-                $userMapTable = Doctrine_Core::getTable('OpenID_Model_UserMap');
-                $userMap = $userMapTable->getByClaimedId($args['authentication_info']['claimed_id']);
+                $userMap = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findOneBy(array('claimed_id' => $args['authentication_info']['claimed_id']));
                 if ($userMap) {
                     $claimedUid = $userMap['uid'];
                 } else {
@@ -762,16 +762,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             throw new Zikula_Exception_Fatal($this->__('An invalid user id was received.'));
         }
 
-        try {
-            $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                ->getAllForUid($uid);
-        } catch (Exception $e) {
-            $message = $this->__('There was a problem accessing the OpenID authentication user map.');
-            if (System::isDevelopmentMode()) {
-                $message .= ' ' . $this->__f('The error was: %1$s', array($e->getMessage()));
-            }
-            throw new Zikula_Exception_Fatal($message);
-        }
+        $userMapList = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findBy(array('uid' => $uid));
 
         $lostUserNames = array();
         if (!empty($userMapList)) {

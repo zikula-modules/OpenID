@@ -55,15 +55,13 @@ class OpenID_Api_User extends Zikula_AbstractApi
                 if (!is_numeric($args['id']) || ((string)((int)$args['id']) != $args['id']) || ($args['id'] < 1)) {
                     throw new Zikula_Exception_Fatal($this->__f('An invalid user id was received: \'%1$s\'.', array($args['id'])));
                 } else {
-                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                        ->getMapById($uid, $args['id']);
+                    $userMap = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findOneBy(array('uid' => $uid, 'id' => $args['id']));
                 }
             } elseif (isset($args['claimed_id'])) {
                 if (empty($args['claimed_id']) || !is_string($args['claimed_id'])) {
                     throw new Zikula_Exception_Fatal($this->__f('An invalid claimed id was received: \'%1$s\'.', array($args['claimed_id'])));
                 } else {
-                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                        ->getMapByClaimedId($uid, $args['claimed_id']);
+                    $userMap = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findOneBy(array('uid' => $uid, 'claimed_id' => $args['claimed_id']));
                 }
             }
         } catch (Exception $e) {
@@ -91,13 +89,7 @@ class OpenID_Api_User extends Zikula_AbstractApi
         $uid = UserUtil::getVar('uid');
 
         if ($uid && ($uid > 1)) {
-            try {
-                $userMapList = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->getAllForUid($uid);
-            } catch (Exception $e) {
-                // TODO - Throw an exception?
-                return false;
-            }
+            $userMapList = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findBy(array('uid' => $uid));
         }
 
         return isset($userMapList) ? $userMapList : array();
@@ -126,11 +118,13 @@ class OpenID_Api_User extends Zikula_AbstractApi
 
         try {
             if (isset($args['claimed_id'])) {
-                return Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->countClaimedId($args['claimed_id']);
+                /** @var OpenID_Entity_Repository_UserMap $repository */
+                $repository = $this->entityManager->getRepository('OpenID_Entity_UserMap');
+                return $repository->countBy(array('claimed_id' => $args['claimed_id']));
             } else {
-                return Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->countAll();
+                /** @var OpenID_Entity_Repository_UserMap $repository */
+                $repository = $this->entityManager->getRepository('OpenID_Entity_UserMap');
+                return $repository->countAll();
             }
         } catch (Exception $e) {
             if (System::isDevelopmentMode()) {
@@ -175,11 +169,13 @@ class OpenID_Api_User extends Zikula_AbstractApi
 
         try {
             if (isset($args['claimed_id'])) {
-                return Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->countClaimedId($args['claimed_id'], $uid);
+                /** @var OpenID_Entity_Repository_UserMap $repository */
+                $repository = $this->entityManager->getRepository('OpenID_Entity_UserMap');
+                return $repository->countBy(array('claimed_id' => $args['claimed_id'], 'uid' => $uid));
             } else {
-                return Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->countAll($uid);
+                /** @var OpenID_Entity_Repository_UserMap $repository */
+                $repository = $this->entityManager->getRepository('OpenID_Entity_UserMap');
+                return $repository->countAll();
             }
         } catch (Exception $e) {
             if (System::isDevelopmentMode()) {

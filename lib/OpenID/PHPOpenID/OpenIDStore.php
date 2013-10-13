@@ -18,27 +18,39 @@
  */
 class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
 {
+    /** @var Doctrine\ORM\EntityManager */
+    private $entityManager;
+
+    private function getEntityManager()
+    {
+        if (!isset($this->entityManager)) {
+            $this->entityManager = ServiceUtil::get('doctrine.entitymanager');
+        }
+        return $this->entityManager;
+    }
+
     /**
      * This method puts an Association object into storage, retrievable by server URL and handle.
      *
-     * @param string      $server_url  The URL of the identity server that this association is with. Because of the way the server portion
+     * @param string      $serverUrl  The URL of the identity server that this association is with. Because of the way the server portion
      *                                      of the library uses this interface, don't assume there are any limitations on the character set 
      *                                      of the input string. In particular, expect to see unescaped non-url-safe characters in
      *                                      the server_url field.
-     * @param Association $association The Association to store.
+     * @param Auth_OpenID_Association $association The Association to store.
      * 
      * @return void
      */
-    function storeAssociation($server_url, $association)
+    public function storeAssociation($serverUrl, Auth_OpenID_Association $association)
     {
-        $openidAssoc = new OpenID_Model_Assoc();
-        $openidAssoc->server_url = $server_url;
-        $openidAssoc->handle = $association->handle;
-        $openidAssoc->secret = $association->secret;
-        $openidAssoc->issued = $association->issued;
-        $openidAssoc->lifetime = $association->lifetime;
-        $openidAssoc->assoc_type = $association->assoc_type;
-        $openidAssoc->replace();
+        $openidAssoc = new OpenID_Entity_Assoc();
+        $openidAssoc->setServerUrl($serverUrl);
+        $openidAssoc->setHandle($association->handle);
+        $openidAssoc->setSecret($association->secret);
+        $openidAssoc->setIssued($association->issued);
+        $openidAssoc->setLifetime($association->lifetime);
+        $openidAssoc->setAssocType($association->assoc_type);
+        $this->getEntityManager()->persist($openidAssoc);
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -53,11 +65,14 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      *
      * @return integer The number of nonces expired.
      */
-    function cleanupNonces()
+    public function cleanupNonces()
     {
         global $Auth_OpenID_SKEW;
-        $nonceTable = Doctrine_Core::getTable('OpenID_Model_Nonce');
-        return $nonceTable->cleanExpired($Auth_OpenID_SKEW);
+
+        /** @var OpenID_Entity_Repository_Nonce $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Nonce');
+
+        return $repository->cleanExpired($Auth_OpenID_SKEW);
     }
 
     /**
@@ -69,10 +84,12 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      *
      * @return integer The number of associations expired.
      */
-    function cleanupAssociations()
+    public function cleanupAssociations()
     {
-        $assocTable = Doctrine_Core::getTable('OpenID_Model_Assoc');
-        return $assocTable->cleanExpired();
+        /** @var OpenID_Entity_Repository_Assoc $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Assoc');
+
+        return $repository->cleanExpired();
     }
 
     /**
@@ -84,7 +101,7 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      * 
      * @return array An array containing the results of {@link cleanupNonces()} and {@link cleanupAssociations()}.
      */
-    function cleanup()
+    public function cleanup()
     {
         return array($this->cleanupNonces(),
                      $this->cleanupAssociations());
@@ -95,7 +112,7 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      * 
      * @return boolean True.
      */
-    function supportsCleanup()
+    public function supportsCleanup()
     {
         return true;
     }
@@ -115,45 +132,45 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      * expired associations when found. This method must not return
      * expired associations.
      *
-     * @param string $server_url The URL of the identity server to get the association for. Because of the way the server portion of
+     * @param string $serverUrl The URL of the identity server to get the association for. Because of the way the server portion of
      *                              the library uses this interface, don't assume there are any limitations on the character set of 
      *                              the input string.  In particular, expect to see unescaped non-url-safe characters in
      *                              the server_url field.
      * @param mixed  $handle     This optional parameter is the handle of the specific association to get. If no specific handle is
      *                              provided, any valid association matching the server URL is returned.
      *
-     * @return Association The Association for the given identity server.
+     * @return null|Auth_OpenID_Association The Association for the given identity server.
      */
-    function getAssociation($server_url, $handle = null)
+    public function getAssociation($serverUrl, $handle = null)
     {
-        $assocTable = Doctrine_Core::getTable('OpenID_Model_Assoc');
+        /** @var OpenID_Entity_Repository_Assoc $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Assoc');
 
-        $assocTable->cleanExpired();
+        $repository->cleanExpired();
 
         if ($handle !== null) {
-            $assocArray = $assocTable->getAssoc($server_url, $handle);
+            $assoc = $repository->getAssoc($serverUrl, $handle);
         } else {
-            $assocArray = $assocTable->getMostRecentAssoc($server_url);
+            $assoc = $repository->getMostRecentAssoc($serverUrl);
         }
 
-        if (!$assocArray || empty($assocArray)) {
+        if (!isset($assoc)) {
             return null;
         } else {
-            $assoc = new Auth_OpenID_Association(
-                $assocArray['handle'],
-                $assocArray['secret'],
-                $assocArray['issued'],
-                $assocArray['lifetime'],
-                $assocArray['assoc_type']
+            return new Auth_OpenID_Association(
+                $assoc->getHandle(),
+                $assoc->getSecret(),
+                $assoc->getIssued(),
+                $assoc->getLifetime(),
+                $assoc->getAssocType()
             );
-            return $assoc;
         }
     }
 
     /**
      * This method removes the matching association if it's found, and returns whether the association was removed or not.
      *
-     * @param string $server_url The URL of the identity server the association to remove belongs to. Because of the way the server
+     * @param string $serverUrl The URL of the identity server the association to remove belongs to. Because of the way the server
      *                              portion of the library uses this interface, don't assume there are any limitations on the 
      *                              character set of the input string. In particular, expect to see unescaped non-url-safe 
      *                              characters in the server_url field.
@@ -162,10 +179,12 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      *
      * @return mixed Returns whether or not the given association existed.
      */
-    function removeAssociation($server_url, $handle)
+    public function removeAssociation($serverUrl, $handle)
     {
-        return Doctrine_Core::getTable('OpenID_Model_Assoc')
-            ->removeAssoc($server_url, $handle);
+        /** @var OpenID_Entity_Repository_Assoc $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Assoc');
+
+        return $repository->removeAssoc($serverUrl, $handle);
     }
 
     /**
@@ -189,7 +208,7 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      *
      * @return bool True if the nonce was valid (not used) and stored; otherwise false.
      */
-    function useNonce($server_url, $timestamp, $salt)
+    public function useNonce($serverUrl, $timestamp, $salt)
     {
         global $Auth_OpenID_SKEW;
 
@@ -198,11 +217,12 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
         }
 
         try {
-            $nonce = new OpenID_Model_Nonce();
-            $nonce->server_url = $server_url;
-            $nonce->timestamp = $timestamp;
-            $nonce->salt = $salt;
-            $nonce->save();
+            $nonce = new OpenID_Entity_Nonce();
+            $nonce->setServerUrl($serverUrl);
+            $nonce->setTimestamp($timestamp);
+            $nonce->setSalt($salt);
+            $this->getEntityManager()->persist($nonce);
+            $this->getEntityManager()->flush();
 
             return true;
         } catch (Exception $e) {
@@ -217,12 +237,15 @@ class OpenID_PHPOpenID_OpenIDStore extends Auth_OpenID_OpenIDStore
      * 
      * @return void
      */
-    function reset()
+    public function reset()
     {
-        Doctrine_Core::getTable('OpenID_Model_Assoc')
-            ->truncateTable();
-        Doctrine_Core::getTable('OpenID_Model_Nonce')
-            ->truncateTable();
+        /** @var OpenID_Entity_Repository_Assoc $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Assoc');
+        $repository->truncateTable();
+
+        /** @var OpenID_Entity_Repository_Nonce $repository */
+        $repository = $this->getEntityManager()->getRepository('OpenID_Entity_Nonce');
+        $repository->truncateTable();
     }
 
 }

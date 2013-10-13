@@ -11,6 +11,8 @@
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
+use Symfony\Component\Debug\Exception\FatalErrorException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Provides access to (non-administrative) user-initiated actions for the OpenID module.
@@ -47,10 +49,12 @@ class OpenID_Controller_User extends Zikula_AbstractController
 
         if ($this->allowOpenIdDelete()) {
             $actions = array('count' => 1);
-            foreach ($openIds as $key => $openId) {
-                $actions[$openId['id']]['delete'] = array(
-                    'url'   => ModUtil::url($this->name, 'user', 'removeOpenID', array('id' => $openId['id'])),
-                );
+            if (!empty($openIds)) {
+                foreach ($openIds as $key => $openId) {
+                    $actions[$openId['id']]['delete'] = array(
+                        'url'   => ModUtil::url($this->name, 'user', 'removeOpenID', array('id' => $openId['id'])),
+                    );
+                }
             }
         } else {
             $actions = array('count' => 0);
@@ -238,39 +242,30 @@ class OpenID_Controller_User extends Zikula_AbstractController
             
             $id = $this->request->request->get('id', null);
             if (!isset($id) || ((string)((int)$id) != $id)) {
-                throw new Zikula_Exception_Fatal($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
+                throw new FatalErrorException($this->__f('An invalid id was recevied: \'%1$s\'.', array($id)));
             }
             
             $confirmed = $this->request->request->get('confirmed', null);
             if (!isset($confirmed)) {
-                throw new Zikula_Exception_Fatal($this->__('An invalid confirmation flag was recevied.'));
+                throw new FatalErrorException($this->__('An invalid confirmation flag was recevied.'));
             }
             
             $proceedToForm = false;
             
             if ($confirmed) {
-                try {
-                    $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                        ->getById($id);
-                    
-                    $uid = UserUtil::getVar('uid');
-                    
-                    if ($userMap['uid'] != $uid) {
-                        throw new Zikula_Exception_Forbidden();
-                    }
-                    
-                    if ($userMap) {
-                        Doctrine_Core::getTable('OpenID_Model_UserMap')
-                            ->removeById($id);
-                    } else {
-                        throw new Zikula_Exception_Fatal($this->__f('An OpenID with the id \'%1$s\' was not found.', array($id)));
-                    }
-                } catch (Doctrine_Exception $e) {
-                    $message = $this->__('An error occurred while retrieving the selected OpenID.');
-                    if (System::isDevelopmentMode()) {
-                        $message .= ' ' . $this->__f('Doctrine exception message: %1$s', array($e->errorMessage()));
-                    }
-                    throw new Zikula_Exception_Fatal($message);
+                $userMap = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findOneBy(array('id' => $id));
+
+                $uid = UserUtil::getVar('uid');
+
+                if ($userMap['uid'] != $uid) {
+                    throw new AccessDeniedHttpException();
+                }
+
+                if ($userMap) {
+                    $this->entityManager->remove($this->entityManager->find('OpenID_Entity_UserMap', $id));
+                    $this->entityManager->flush();
+                } else {
+                    throw new FatalErrorException($this->__f('An OpenID with the id \'%1$s\' was not found.', array($id)));
                 }
             }
         } elseif ($this->request->isGet()) {
@@ -280,8 +275,7 @@ class OpenID_Controller_User extends Zikula_AbstractController
             }
             
             try {
-                $userMap = Doctrine_Core::getTable('OpenID_Model_UserMap')
-                    ->getById($id);
+                $userMap = $this->entityManager->find('OpenID_Entity_UserMap', $id);
                 
                 if (!$userMap) {
                     throw new Zikula_Exception_Fatal($this->__f('An OpenID with the id \'%1$s\' was not found.', array($id)));
