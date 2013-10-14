@@ -32,19 +32,19 @@
         </tr>
         </thead>
         <tbody>
-        {foreach from=$users item='user'}
+        {foreach from=$userMapByUid item='user' key='uid'}
             <tr>
-                <td><input class="oid-select-user" type="checkbox" id="user_{$user.uid}" name="users[{$user.uid}]" value="1" /></td>
-                <td>{$user.uid|safetext}</td>
-                <td>{$user.uname|safetext}</td>
-                <td>{$user.hasPassword|openid_bool2pic}</td>
+                <td><input class="oid-select-user" type="checkbox" id="user_{$user.user.uid}" name="users[{$user.user.uid}]" value="1" /></td>
+                <td>{$user.user.uid|safetext}</td>
+                <td>{$user.user.uname|safetext}</td>
+                <td>{$user.user.hasPassword|openid_bool2pic}</td>
                 {foreach from=$openIdProvider item='provider'}
-                    <td>TODO</td>
+                    <td>{if in_array($provider->getProviderName(), $user.registeredProviders)}{gt text='Yes'}{else}{gt text='No'}{/if}</td>
                 {/foreach}
                 <td class="oid-actions">
-                    {if !$user.hasPassword}
+                    {if !$user.user.hasPassword}
                     {checkpermissionblock component='.*' instance='.*' level=ACCESS_ADMIN}
-                    <a data-uid="{$user.uid}" data-uname="{$user.uname}" class="oid-password" title="{gt text='Set a random password for this user'}" href="{modurl modname='OpenID' type='admin' func='setpassword' uid=$user.uid skipCheck='%s'}">{img modname='core' set='icons/extrasmall' src='password.png'}</a>
+                    <a data-uid="{$user.user.uid}" data-uname="{$user.user.uname}" class="oid-password" title="{gt text='Set a random password for this user'}" href="{modurl modname='OpenID' type='admin' func='setpassword' uid=$user.user.uid skipCheck='%s'}">{img modname='core' set='icons/extrasmall' src='password.png'}</a>
                     {/checkpermissionblock}
                     {/if}
                 </td>

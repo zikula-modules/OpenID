@@ -38,11 +38,19 @@ class OpenID_Controller_Admin extends Zikula_AbstractController
     {
         $this->throwForbiddenUnless(SecurityUtil::checkPermission('OpenID::', '::', ACCESS_ADMIN));
 
-        $users = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findAll();
+        $users = $this->entityManager->getRepository('OpenID_Entity_UserMap')->findBy(array(), array('uid' => 'ASC'));
+
+        $newUsersArrayByUid = array();
+        /** @var OpenID_Entity_UserMap $user */
+        foreach ($users as $user) {
+            $newUsersArrayByUid[$user->getUid()]['user'] = $user;
+            $newUsersArrayByUid[$user->getUid()]['registeredProviders'][] = $user->getAuthentication_method();
+        }
+        unset($users);
 
         $openIdProvider = ModUtil::apiFunc($this->name, 'user', 'getAllOpenIdProvider');
 
-        return $this->view->assign('users', $users)
+        return $this->view->assign('userMapByUid', $newUsersArrayByUid)
                 ->assign('openIdProvider', $openIdProvider)
                 ->fetch('Admin/view.tpl');
     }

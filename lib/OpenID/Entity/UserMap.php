@@ -57,7 +57,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @param string $authentication_method
      */
-    public function setauthentication_method($authentication_method)
+    public function setAuthentication_method($authentication_method)
     {
         $this->authentication_method = $authentication_method;
     }
@@ -65,7 +65,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @return string
      */
-    public function getauthentication_method()
+    public function getAuthentication_method()
     {
         return $this->authentication_method;
     }
@@ -73,7 +73,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @param string $claimed_id
      */
-    public function setclaimed_id($claimed_id)
+    public function setClaimed_id($claimed_id)
     {
         $this->claimed_id = $claimed_id;
     }
@@ -81,7 +81,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @return string
      */
-    public function getclaimed_id()
+    public function getClaimed_id()
     {
         return $this->claimed_id;
     }
@@ -89,7 +89,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @param string $display_id
      */
-    public function setdisplay_id($display_id)
+    public function setDisplay_id($display_id)
     {
         $this->display_id = $display_id;
     }
@@ -97,7 +97,7 @@ class OpenID_Entity_UserMap extends Zikula_EntityAccess
     /**
      * @return string
      */
-    public function getdisplay_id()
+    public function getDisplay_id()
     {
         return $this->display_id;
     }
