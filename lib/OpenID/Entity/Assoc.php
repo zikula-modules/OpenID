@@ -188,32 +188,25 @@ class OpenID_Entity_Assoc extends Zikula_EntityAccess
     }
 
     /**
-     * "Octifies" a binary string by returning a string with escaped
-     * octal bytes.
+     * "Octifies" a binary string by returning a comma seperated string with the corresponding ASCII values.
      *
      * @param The string to "octify".
      *
-     * @return string The string with escaped octal bytes.
+     * @return string The string with the corresponding ASCII values.
      */
     private function octify($str)
     {
-        $result = "";
-        for ($i = 0; $i < Auth_OpenID::bytes($str); $i++) {
-            $ch = substr($str, $i, 1);
-            if ($ch == "\\") {
-                $result .= "\\\\\\\\";
-            } else if (ord($ch) == 0) {
-                $result .= "\\\\000";
-            } else {
-                $result .= "\\" . strval(decoct(ord($ch)));
-            }
+        $result = array();
+        for ($i = 0; $i < strlen($str); $i++) {
+            $char = substr($str, $i, 1);
+            $result[] = ord($char);
         }
-        return $result;
+
+        return implode(',', $result);
     }
 
     /**
-     * "Unoctifies" octal-escaped data and returns the
-     * resulting ASCII (possibly binary) string.
+     * "Unoctifies" a comma seperated string with ASCII values into an ASCII (possibly binary) string.
      *
      * @param The string to "unoctify".
      *
@@ -221,29 +214,9 @@ class OpenID_Entity_Assoc extends Zikula_EntityAccess
      */
     private function unoctify($str)
     {
-        $result = "";
-        $i = 0;
-        while ($i < strlen($str)) {
-            $char = $str[$i];
-            if ($char == "\\") {
-                // Look to see if the next char is a backslash and
-                // append it.
-                if ($str[$i + 1] != "\\") {
-                    $octal_digits = substr($str, $i + 1, 3);
-                    $octal_digits = explode("\\", $octal_digits);
-                    $octal_digits = $octal_digits[0];
-                    $dec = octdec($octal_digits);
-                    $char = chr($dec);
-                    $i += strlen((string)$octal_digits) + 1;
-                } else {
-                    $char = "\\";
-                    $i += 2;
-                }
-            } else {
-                $i += 1;
-            }
-
-            $result .= $char;
+        $result = '';
+        foreach (explode(',', $str) as $char) {
+            $result .= chr($char);
         }
 
         return $result;
