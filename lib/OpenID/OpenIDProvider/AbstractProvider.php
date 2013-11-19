@@ -74,6 +74,21 @@ abstract class OpenID_OpenIDProvider_AbstractProvider implements Zikula_Translat
         return true;
     }
 
+    public function getIcon()
+    {
+        return false;
+    }
+
+    public function redirectToRegistrationOnLoginError()
+    {
+        return true;
+    }
+
+    public function getExtraExtensionArgs()
+    {
+        return array();
+    }
+
     /**
      * Translate.
      *

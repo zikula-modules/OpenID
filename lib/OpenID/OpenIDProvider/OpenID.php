@@ -83,7 +83,7 @@ class OpenID_OpenIDProvider_OpenID extends OpenID_OpenIDProvider_AbstractProvide
 
     public function getShortDescription()
     {
-        return $this->__('Any OpenID Account');
+        return $this->__('Any OpenID');
     }
 
     public function getLongDescription()
@@ -94,5 +94,10 @@ class OpenID_OpenIDProvider_OpenID extends OpenID_OpenIDProvider_AbstractProvide
     public function needsSsl()
     {
         return false;
+    }
+
+    public function getIcon()
+    {
+        return 'modules/OpenID/images/medium/openid-icon.png';
     }
 }

@@ -70,4 +70,8 @@ class OpenID_OpenIDProvider_VeriSignPIP extends OpenID_OpenIDProvider_AbstractPr
         return false;
     }
 
+    public function getIcon()
+    {
+        return 'modules/OpenID/images/medium/symantec-checkmark-only-logo.png';
+    }
 }
