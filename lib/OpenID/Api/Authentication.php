@@ -11,6 +11,7 @@
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
+use Symfony\Component\Debug\Exception\FatalErrorException;
 
 /**
  * The user authentication services for the log-in process through the OpenID protocol.
@@ -44,7 +45,8 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 $provider->getProviderName(),
                 $provider->getShortDescription(),
                 $provider->getLongDescription(),
-                true
+                true,
+                $provider->getIcon()
             );
             $this->authenticationMethods[$provider->getProviderName()] = $authenticationMethod;
 
@@ -186,6 +188,32 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
     }
 
     /**
+     * Retrieves an authentication method defined by this module.
+     *
+     * Parameters passed in $args:
+     * ---------------------------
+     * string 'method' The name of the authentication method.
+     *
+     * @param array $args All arguments passed to this function.
+     *
+     * @return array An array containing the authentication method requested.
+     *
+     * @throws Zikula_Exception_Fatal Thrown if invalid parameters are sent in $args.
+     */
+    public function getAuthenticationMethod(array $args)
+    {
+        if (!isset($args['method'])) {
+            throw new \InvalidArgumentException($this->__f('An invalid value for the \'method\' parameter was received (\'%1$s\').', array($args['method'])));
+        }
+
+        if (!isset($this->authenticationMethods[($args['method'])])) {
+            throw new FatalErrorException($this->__f('The requested authentication method \'%1$s\' does not exist.', array($args['method'])));
+        }
+
+        return $this->authenticationMethods[($args['method'])];
+    }
+
+    /**
      * Registers a user account record or a user registration request with the authentication method.
      *
      * This is called during the user registration process to associate an authentication method provided by this authentication module
@@ -318,6 +346,7 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
      */
     protected function internalCheckPassword(array $authenticationMethod, array $authenticationInfo, $reentrantURL = null, $forRegistration = false)
     {
+        /** @var OpenID_OpenIDProvider_AbstractProvider $openidHelper */
         $openidHelper = OpenID_Helper_Builder::buildInstance($authenticationMethod['method'], $authenticationInfo);
         if (!isset($openidHelper) || ($openidHelper === false)) {
             throw new Zikula_Exception_Fatal($this->__('The specified authentication method appears to be unsupported.'));
@@ -343,9 +372,34 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
             $openidAuthRequest = @$openidConsumer->begin($openidHelper->getSuppliedId());
 
             if ($openidAuthRequest instanceof Auth_OpenID_AuthRequest) {
+                // Show the page's favicon on the provider page (not supported by all providers).
+                $openidAuthRequest->addExtensionArg(Auth_OpenID_OPENID_NS, 'ns.ui', 'http://specs.openid.net/extensions/ui/1.0');
+                $openidAuthRequest->addExtensionArg(Auth_OpenID_OPENID_NS, 'ui.icon', 'true');
+
+                $extraExtensionArgs = $openidHelper->getExtraExtensionArgs();
+                foreach ($extraExtensionArgs as $arg) {
+                    $openidAuthRequest->addExtensionArg($arg[0], $arg[1], $arg[2]);
+                }
+
                 if ($forRegistration) {
-                    $simpleRegistrationRequest = Auth_OpenID_SRegRequest::build(array('nickname', 'email'));
+                    // Build sreg request. Note: In case the provider doesn't support it, it will be ignored.
+                    $simpleRegistrationRequest = Auth_OpenID_SRegRequest::build(array('nickname', 'email', 'language'));
                     $openidAuthRequest->addExtension($simpleRegistrationRequest);
+
+                    // Create attribute request object
+                    $attributes[] = Auth_OpenID_AX_AttrInfo::make('http://axschema.org/contact/email', 1, 1, 'email');
+                    $attributes[] = Auth_OpenID_AX_AttrInfo::make('http://axschema.org/namePerson/first', 1 ,0, 'firstname');
+                    $attributes[] = Auth_OpenID_AX_AttrInfo::make('http://axschema.org/namePerson/last', 1, 0, 'lastname');
+                    $attributes[] = Auth_OpenID_AX_AttrInfo::make('http://axschema.org/pref/language', 1, 0, 'language');
+
+                    // Create AX fetch request
+                    $axFetchRequest = new Auth_OpenID_AX_FetchRequest;
+
+                    // Add attributes to AX fetch request
+                    foreach($attributes as $attribute){
+                        $axFetchRequest->add($attribute);
+                    }
+                    $openidAuthRequest->addExtension($axFetchRequest);
                 }
 
                 // For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
@@ -424,12 +478,58 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
                 );
 
                 if ($forRegistration) {
+                    // SREG
                     $simpleRegistrationResponse = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
                     if ($simpleRegistrationResponse) {
                         $registrationData = $simpleRegistrationResponse->contents();
                         foreach ($registrationData as $fieldName => $value) {
-                            $returnResult[$fieldName] = $value;
+                            switch($fieldName) {
+                                case 'nickname':
+                                    $returnResult['uname'] = (!empty($value)) ? $value : null;
+                                    break;
+                                case 'email':
+                                    $returnResult['email'] = (!empty($value)) ? $value : null;
+                                    break;
+                                case 'language':
+                                    $returnResult['lang'] = (!empty($value)) ? $value : null;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                    }
+
+                    // Attribute exchange. Overwrites the sreg attributes except for nickname if set.
+                    $axResponse = new Auth_OpenID_AX_FetchResponse();
+                    $obj = $axResponse->fromSuccessResponse($response);
+                    $data = $obj->data;
+
+                    if (isset($data)) {
+                        foreach ($data as $fieldName => $value) {
+                            switch($fieldName) {
+                                case 'http://axschema.org/namePerson/first':
+                                    $firstName = (!empty($value[0])) ? $value[0] : null;
+                                    break;
+                                case 'http://axschema.org/namePerson/last':
+                                    $lastName = (!empty($value[0])) ? $value[0] : null;
+                                    break;
+                                case 'http://axschema.org/pref/language':
+                                    $returnResult['lang'] = (!empty($value[0])) ? $value[0] : $returnResult['lang'];
+                                    break;
+                                case 'http://axschema.org/contact/email':
+                                    $returnResult['email'] = (!empty($value[0])) ? $value[0] : $returnResult['email'];
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (isset($firstName) && isset($lastName) && !isset($returnResult['uname'])) {
+                            $returnResult['uname'] = mb_strtolower($firstName . '-' . $lastName);
+                        }
+                    }
+
+                    if (isset($returnResult['email'])) {
+                        $returnResult['hideEmail'] = true;
                     }
                 }
 
@@ -783,5 +883,29 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         }
 
         return $lostUserNames;
+    }
+
+    /**
+     * Check whether the user shall be redirected to the registration screen if the login process fails.
+     *
+     * Possible reasons for the login process to fail:
+     * - User does not exist yet.
+     * - User provides wrong credentials.
+     *
+     * @param array $args {
+     *     @type array $authentication_method An array identifying the selected authentication method by 'modname' and 'method'.
+     *     @type array $authentication_info   An array containing the authentication information supplied by the user; for this module, a 'supplied_id'.
+     * }
+     *
+     * @return bool True if the user shall be redirected to the registration screen, false otherwise.
+     */
+    public function redirectToRegistrationOnLoginError(array $args)
+    {
+        /** @var OpenID_Helper_AuthenticationMethod $authenticationMethod */
+        $authenticationMethod = $this->authenticationMethods[($args['authentication_method']['method'])];
+        /** @var OpenID_OpenIDProvider_AbstractProvider $provider */
+        $provider = $authenticationMethod->getProvider();
+
+        return $provider->redirectToRegistrationOnLoginError();
     }
 }

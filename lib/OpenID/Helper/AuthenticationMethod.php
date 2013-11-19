@@ -42,4 +42,10 @@ class OpenID_Helper_AuthenticationMethod extends Users_Helper_AuthenticationMeth
             $this->disableForRegistration();
         }
     }
+
+    public function getProvider()
+    {
+        $classname =  'OpenID_OpenIDProvider_' . $this->getMethod();
+        return new $classname();
+    }
 }

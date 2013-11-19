@@ -51,7 +51,7 @@ class OpenID_OpenIDProvider_Google extends OpenID_OpenIDProvider_AbstractProvide
 
     public function getShortDescription()
     {
-        return $this->__('Google Account');
+        return $this->__('Google');
     }
 
     public function getLongDescription()
@@ -62,5 +62,10 @@ class OpenID_OpenIDProvider_Google extends OpenID_OpenIDProvider_AbstractProvide
     public function needsSsl()
     {
         return true;
+    }
+
+    public function getIcon()
+    {
+        return 'fa-google-plus';
     }
 }

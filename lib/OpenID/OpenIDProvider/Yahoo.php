@@ -18,7 +18,7 @@
 class OpenID_OpenIDProvider_Yahoo extends OpenID_OpenIDProvider_AbstractProvider
 {
     /**
-     * The OpenID server endpoint used by Google for all OpenID authentication.
+     * The OpenID server endpoint used by Yahoo for all OpenID authentication.
      */
     const USER_ENDPOINT = "http://yahoo.com";
 
@@ -29,11 +29,7 @@ class OpenID_OpenIDProvider_Yahoo extends OpenID_OpenIDProvider_AbstractProvider
      */
     public function getSuppliedId()
     {
-        if (isset($this->suppliedId)) {
-            return $this->suppliedId;
-        } else {
-            return self::USER_ENDPOINT;
-        }
+        return self::USER_ENDPOINT;
     }
 
     /**
@@ -57,7 +53,7 @@ class OpenID_OpenIDProvider_Yahoo extends OpenID_OpenIDProvider_AbstractProvider
 
     public function getShortDescription()
     {
-        return $this->__('Yahoo Account');
+        return $this->__('Yahoo');
     }
 
     public function getLongDescription()
@@ -68,5 +64,15 @@ class OpenID_OpenIDProvider_Yahoo extends OpenID_OpenIDProvider_AbstractProvider
     public function needsSsl()
     {
         return true;
+    }
+
+    public function getIcon()
+    {
+        return 'modules/OpenID/images/medium/yahoo-icon.png';
+    }
+
+    public function getExtraExtensionArgs()
+    {
+        return array(array(Auth_OpenID_BARE_NS, 'xopenid_lang_pref', ZLanguage::getLocale()));
     }
 }

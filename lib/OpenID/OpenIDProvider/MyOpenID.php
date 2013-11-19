@@ -13,14 +13,14 @@
  */
 
 /**
- * A helper or utility class that provides information for a myID.net OpenID provider in expected formats for the protocol.
+ * A helper or utility class that provides information for a myOpenID OpenID provider in expected formats for the protocol.
  */
-class OpenID_OpenIDProvider_MyID extends OpenID_OpenIDProvider_AbstractProvider
+class OpenID_OpenIDProvider_MyOpenID extends OpenID_OpenIDProvider_AbstractProvider
 {
     /**
      * A sprintf pattern used to construct the appropriate endpoint URL when only the user's PIP user name is supplied as the supplied id.
      */
-    const USER_ENDPOINT = 'http://%s.myid.net/';
+    const USER_ENDPOINT = 'http://%s.myopenid.com/';
 
     /**
      * Returns the supplied id in the form of an OpenID endpoint, which for PIP is USER_ENDPOINT constant with the user's PIP user name in place of the parameter.
@@ -29,7 +29,7 @@ class OpenID_OpenIDProvider_MyID extends OpenID_OpenIDProvider_AbstractProvider
      */
     public function getSuppliedId()
     {
-        if (strpos($this->suppliedId, 'myid.net') === false) {
+        if (strpos($this->suppliedId, 'myopenid.com') === false) {
             return sprintf(self::USER_ENDPOINT, $this->suppliedId);
         } else {
             return $this->suppliedId;
@@ -52,21 +52,26 @@ class OpenID_OpenIDProvider_MyID extends OpenID_OpenIDProvider_AbstractProvider
 
     public function getProviderDisplayName()
     {
-        return $this->__('myID.net');
+        return $this->__('myOpenID');
     }
 
     public function getShortDescription()
     {
-        return $this->__('myID.net Account');
+        return $this->__('myOpenID');
     }
 
     public function getLongDescription()
     {
-        return $this->__('myID.net Account');
+        return $this->__('myOpenID Account');
     }
 
     public function needsSsl()
     {
         return false;
+    }
+
+    public function getIcon()
+    {
+        return 'modules/OpenID/images/medium/myopenid-icon.png';
     }
 }
