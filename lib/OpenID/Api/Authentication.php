@@ -360,6 +360,13 @@ class OpenID_Api_Authentication extends Zikula_Api_AbstractAuthentication
         $openidNamespace = $this->request->query->get('openid_ns', null);
         $openidConsumer = @new Auth_OpenID_Consumer(new OpenID_PHPOpenID_OpenIDStore(), new OpenID_PHPOpenID_SessionStore());
 
+        // support optional and missing openid_ns in some v1 spec implementations, see #23.
+        $openidMode = $this->request->query->get('openid_mode', null);
+        if ((is_null($openidNamespace) || $openidNamespace == 'null') && isset($openidMode) && $openidMode == "id_res") {
+            // looks like a v1 spec without openid.ns set. Set it to the v1 optional value.
+            $openidNamespace = "http://openid.net/signon/1.1";
+        }
+        
         if (!isset($openidNamespace) || empty($openidNamespace)) {
             // We are NOT returning from a previous redirect to the authorizing provider
 
